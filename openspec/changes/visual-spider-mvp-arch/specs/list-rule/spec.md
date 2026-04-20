@@ -2,12 +2,12 @@
 
 ## ADDED Requirements
 
-### Requirement: Page render and screenshot
-系统 SHALL 使用 Playwright 渲染目标页面并生成截图。
+### Requirement: Page render in frontend browser
+系统 SHALL 使用前端浏览器加载目标页面，用户在前端直接操作选区。
 
 #### Scenario: Render page
 - **WHEN** 用户输入目标URL
-- **THEN** Playwright 加载页面并返回截图
+- **THEN** 前端浏览器加载页面，用户可在页面直接点击选区
 
 ### Requirement: Container selector
 系统 SHALL 支持用户通过点击选择列表容器区域。

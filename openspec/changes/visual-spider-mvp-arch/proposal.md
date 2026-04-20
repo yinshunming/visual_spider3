@@ -6,8 +6,8 @@
 
 - 新增 5 个核心 Domain 的架构定义
 - 新增数据库表结构设计（crawl_task, crawl_list_rule, crawl_detail_rule, list_data, detail_data, crawl_log）
-- 定义列表规则生成流程：Playwright 渲染 → 截图 → 用户选区 → 候选生成 → 预览
-- 定义详情规则生成流程：跳转详情页 → Playwright 渲染 → 用户选区 → 字段规则保存 → 预览
+- 定义列表规则生成流程：前端浏览器加载页面 → 用户点击选区 → 前端获取xpath/css selector → API保存规则 → 预览
+- 定义详情规则生成流程：跳转详情页 → 前端浏览器加载 → 用户点击字段选区 → 前端获取selector → API保存字段规则 → 预览
 - 定义调度执行流程：Quartz 触发 → 列表提取 → 详情提取 → 分页处理 → Upsert 入库
 - 定义失败排查功能：执行历史查看、失败详情、手动重试
 

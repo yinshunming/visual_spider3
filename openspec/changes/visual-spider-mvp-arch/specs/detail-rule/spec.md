@@ -9,12 +9,12 @@
 - **WHEN** 用户点击某个列表项
 - **THEN** 系统打开该链接对应的详情页
 
-### Requirement: Detail page render
-系统 SHALL 使用 Playwright 渲染详情页并生成截图。
+### Requirement: Detail page render in frontend browser
+系统 SHALL 使用前端浏览器渲染详情页，用户在前端直接操作选区。
 
 #### Scenario: Render detail page
 - **WHEN** 详情页加载完成
-- **THEN** Playwright 返回页面截图
+- **THEN** 前端浏览器展示详情页，用户可在页面直接点击选区
 
 ### Requirement: Field selector
 系统 SHALL 支持用户点击详情页中的各字段区域（标题、正文、作者、标签），系统生成候选选择器。

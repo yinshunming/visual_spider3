@@ -4,13 +4,13 @@
 
 **技术栈：**
 - Java 21 + Spring Boot 3.x
-- Thymeleaf（服务端渲染）
+- 前端：Vue/React（独立前端，获取xpath/css selector）
 - MyBatis + PostgreSQL
 - Quartz Scheduler
 - Playwright for Java + Jsoup
 
 **约束：**
-- 第一版优先采用服务端渲染后台页面
+- 前端获取xpath/css selector，通过API保存到后端
 - 不使用 iframe 嵌入第三方网站做选区
 - 规则配置必须支持版本化（未来）
 - 每个里程碑结束时必须能编译通过
@@ -57,13 +57,13 @@
 
 **理由：** MVP 快速交付，减少初始复杂度。用户通过选择候选列表中的一个来确定最终规则。
 
-### 4. 可视化选区方案：Browser-in-Box
+### 4. 可视化选区方案：前端浏览器直接获取选择器
 
-**决定：** Playwright 启动独立浏览器进程，截图 + 坐标映射，用户在截图上点击
+**决定：** 前端浏览器（独立前端）加载目标页面，用户在前端浏览器中点击页面元素，前端获取xpath/css selector后通过API保存到后端
 
-**理由：** 项目约束不允许使用 iframe，Browser-in-Box 满足要求且实现复杂度适中。
+**理由：** 前端直接操作真实浏览器，无需截图坐标映射，体验更好且实现复杂度可控。
 
-**备选：** 独立桌面应用 - 体验更好但需要单独开发。
+**备选：** Browser-in-Box（截图+坐标映射） - 隔离性好但体验差。
 
 ### 5. 入库策略：Upsert
 
