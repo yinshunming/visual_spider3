@@ -3,7 +3,7 @@
 ## 技术栈
 - Java 17+ / Spring Boot 3.x
 - MyBatis 或 JPA / Maven 或 Gradle
-- MySQL / Redis / MQ
+- PostgreSQL / Redis / MQ
 
 ## 架构原则
 - 业务逻辑放在 Service / Domain 层
