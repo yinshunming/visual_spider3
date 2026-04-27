@@ -1,6 +1,6 @@
 # Visual Spider 开发路线图
 
-**更新日期**: 2026-04-26
+**更新日期**: 2026-04-27
 
 ---
 
@@ -22,11 +22,11 @@
 **目标**: 完成项目脚手架、数据库表结构、基础配置
 
 ### 交付物
-- [ ] Spring Boot 项目初始化（Maven/Gradle）
-- [ ] PostgreSQL 数据库连接配置
-- [ ] JPA Entity 生成（SpiderTask、SpiderField、ContentItem）
-- [ ] Repository 层基础 CRUD
-- [ ] 基础 REST API 骨架
+- [x] Spring Boot 项目初始化（Maven/Gradle）
+- [x] PostgreSQL 数据库连接配置
+- [x] JPA Entity 生成（SpiderTask、SpiderField、ContentItem）
+- [x] Repository 层基础 CRUD
+- [x] 基础 REST API 骨架
 
 ### 目录结构
 ```
@@ -193,7 +193,7 @@ M6 (调度与发布)
 
 | 里程碑 | 状态 | 完成日期 |
 |--------|------|----------|
-| M1 | ⬜ 未开始 | - |
+| M1 | ✅ 已完成 | 2026-04-27 |
 | M2 | ⬜ 未开始 | - |
 | M3 | ⬜ 未开始 | - |
 | M4 | ⬜ 未开始 | - |
