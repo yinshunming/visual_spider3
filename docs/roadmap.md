@@ -1,6 +1,6 @@
 # Visual Spider 开发路线图
 
-**更新日期**: 2026-04-27
+**更新日期**: 2026-04-28
 
 ---
 
@@ -44,12 +44,12 @@ backend/src/main/java/com/example/visualspider/
 **目标**: 完成爬虫任务的完整 CRUD 和状态管理
 
 ### 交付物
-- [ ] SpiderTaskController - 任务 CRUD API
-- [ ] SpiderTaskService - 业务逻辑
-- [ ] 任务状态机（DRAFT → ENABLED/DISABLED）
-- [ ] 任务列表分页查询
-- [ ] 任务启用/停用接口
-- [ ] SpiderField 关联管理
+- [x] SpiderTaskController - 任务 CRUD API
+- [x] SpiderTaskService - 业务逻辑
+- [x] 任务状态机（DRAFT → ENABLED/DISABLED）
+- [x] 任务列表分页查询
+- [x] 任务启用/停用接口
+- [x] SpiderField 关联管理
 
 ### API
 | 方法 | 路径 | 说明 |
@@ -194,7 +194,7 @@ M6 (调度与发布)
 | 里程碑 | 状态 | 完成日期 |
 |--------|------|----------|
 | M1 | ✅ 已完成 | 2026-04-27 |
-| M2 | ⬜ 未开始 | - |
+| M2 | ✅ 已完成 | 2026-04-28 |
 | M3 | ⬜ 未开始 | - |
 | M4 | ⬜ 未开始 | - |
 | M5 | ⬜ 未开始 | - |

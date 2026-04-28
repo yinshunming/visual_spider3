@@ -1,9 +1,10 @@
 package com.example.visualspider.repository;
 
 import com.example.visualspider.entity.ContentItem;
-import com.example.visualspider.entity.ContentStatus;
+import com.example.visualspider.entity.ContentItem.ContentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

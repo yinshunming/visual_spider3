@@ -1,9 +1,6 @@
 package com.example.visualspider.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 /**
@@ -11,8 +8,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "spider_tasks")
-@Getter
-@Setter
 public class SpiderTask {
 
     @Id
@@ -65,13 +60,48 @@ public class SpiderTask {
         updatedAt = LocalDateTime.now();
     }
 
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public UrlMode getUrlMode() { return urlMode; }
+    public void setUrlMode(UrlMode urlMode) { this.urlMode = urlMode; }
+
+    public String getListPageUrl() { return listPageUrl; }
+    public void setListPageUrl(String listPageUrl) { this.listPageUrl = listPageUrl; }
+
+    public String getListPageRule() { return listPageRule; }
+    public void setListPageRule(String listPageRule) { this.listPageRule = listPageRule; }
+
+    public String[] getSeedUrls() { return seedUrls; }
+    public void setSeedUrls(String[] seedUrls) { this.seedUrls = seedUrls; }
+
+    public String getContentPageRule() { return contentPageRule; }
+    public void setContentPageRule(String contentPageRule) { this.contentPageRule = contentPageRule; }
+
+    public String getScheduleCron() { return scheduleCron; }
+    public void setScheduleCron(String scheduleCron) { this.scheduleCron = scheduleCron; }
+
+    public TaskStatus getStatus() { return status; }
+    public void setStatus(TaskStatus status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
     /**
      * URL模式枚举
      */
     public enum UrlMode {
-        /** 列表页模式 */
         LIST_PAGE,
-        /** 直接URL模式 */
         DIRECT_URL
     }
 
@@ -79,11 +109,8 @@ public class SpiderTask {
      * 任务状态枚举
      */
     public enum TaskStatus {
-        /** 草稿 */
         DRAFT,
-        /** 已启用 */
         ENABLED,
-        /** 已禁用 */
         DISABLED
     }
 }
