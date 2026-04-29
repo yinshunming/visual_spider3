@@ -25,6 +25,9 @@ public class SpiderTaskService {
     @Autowired
     private SpiderFieldRepository spiderFieldRepository;
 
+    @Autowired
+    private CrawlerEngine crawlerEngine;
+
     public Page<SpiderTask> findAll(Pageable pageable) {
         return spiderTaskRepository.findAll(pageable);
     }
@@ -137,9 +140,19 @@ public class SpiderTaskService {
         return spiderTaskRepository.save(task);
     }
 
+    @Transactional
     public void run(Long id) {
-        // TODO: implement in M3
-        throw new UnsupportedOperationException("Task execution will be implemented in M3");
+        SpiderTask task = spiderTaskRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Task not found: " + id));
+
+        if (task.getStatus() != TaskStatus.ENABLED) {
+            throw new IllegalStateException("Only ENABLED tasks can be run. Current status: " + task.getStatus());
+        }
+
+        task.setStatus(TaskStatus.RUNNING);
+        spiderTaskRepository.save(task);
+
+        crawlerEngine.executeAsync(id, task);
     }
 
     private void saveFields(Long taskId, List<FieldRequest> fieldRequests) {

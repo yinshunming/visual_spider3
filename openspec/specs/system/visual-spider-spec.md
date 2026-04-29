@@ -34,7 +34,7 @@
 | seed_urls | TEXT[] | 直接内容页URL列表（DIRECT_URL模式） |
 | content_page_rule | JSONB | 内容页解析规则 |
 | schedule_cron | VARCHAR(100) | Cron表达式（可选） |
-| status | ENUM | DRAFT / ENABLED / DISABLED |
+| status | ENUM | DRAFT / ENABLED / DISABLED / RUNNING |
 | created_at | TIMESTAMP | 创建时间 |
 | updated_at | TIMESTAMP | 更新时间 |
 
@@ -197,9 +197,17 @@ visual-spider/
 │       │   └── CdpController.java
 │       ├── service/
 │       │   ├── SpiderTaskService.java
-│       │   ├── CrawlerEngine.java
+│       │   ├── CrawlerEngine.java          # M3: 爬虫执行引擎
+│       │   ├── ListPageParser.java         # M3: 列表页解析
+│       │   ├── ContentPageExtractor.java   # M3: 内容页提取
+│       │   ├── PaginationRule.java         # M3: 分页规则
+│       │   ├── DirectUrlParser.java        # M3: 直接URL模式
 │       │   ├── ContentService.java
 │       │   └── CdpService.java
+│       ├── config/
+│       │   └── AsyncConfig.java            # M3: 异步配置
+│       └── exception/
+│           └── CrawlException.java          # M3: 爬虫异常
 │       ├── entity/
 │       │   ├── SpiderTask.java
 │       │   ├── SpiderField.java
@@ -235,7 +243,7 @@ visual-spider/
 ### 8.1 任务管理
 
 | 方法 | 路径 | 说明 |
-|-----|------|------|
+|-----|------|-----|
 | GET | /api/tasks | 分页查询任务列表 |
 | GET | /api/tasks/{id} | 获取任务详情（含字段定义） |
 | POST | /api/tasks | 创建任务 |
@@ -243,9 +251,42 @@ visual-spider/
 | DELETE | /api/tasks/{id} | 删除任务 |
 | POST | /api/tasks/{id}/enable | 启用任务 |
 | POST | /api/tasks/{id}/disable | 停用任务 |
-| POST | /api/tasks/{id}/run | 手动执行任务 |
+| POST | /api/tasks/{id}/run | 手动执行任务（M3） |
 
-### 8.2 可视化配置
+### 8.2 爬虫执行（M3）
+
+#### 8.2.1 执行入口
+- **POST /api/tasks/{id}/run**: 异步启动爬虫任务
+  - 任务状态必须为 ENABLED
+  - 返回 200 OK 后立即开始异步爬取
+  - 爬取期间任务状态变为 RUNNING
+  - 爬取完成或失败后恢复为 ENABLED
+
+#### 8.2.2 执行引擎（CrawlerEngine）
+- **LIST_PAGE 模式**: 
+  - 调用 ListPageParser 解析列表页
+  - 支持分页规则（INFINITE_SCROLL / PAGE_NUMBER / NEXT_BUTTON）
+  - 从列表页提取内容页 URL
+  - 调用 ContentPageExtractor 提取每个内容页字段
+  
+- **DIRECT_URL 模式**:
+  - 直接使用 seedUrls 作为内容页 URL
+  - 跳过列表页解析
+
+#### 8.2.3 内容页提取（ContentPageExtractor）
+- 根据 SpiderField 配置提取字段值
+- 支持 CSS 和 XPath 选择器
+- 支持三种提取类型：text、attr、html
+- 图片/链接字段自动解析相对 URL 为绝对 URL
+- 选择器未匹配时返回默认值
+
+#### 8.2.4 分页规则（PaginationRule）
+- **INFINITE_SCROLL**: 容器选择器返回空时停止
+- **PAGE_NUMBER**: 按 pagePattern 生成页码 URL，{page} 占位符替换
+- **NEXT_BUTTON**: 查找下一页按钮元素获取下一页 URL
+- **停止条件**: 容器为空 或 达到 maxPages 限制
+
+### 8.3 可视化配置
 
 | 方法 | 路径 | 说明 |
 |-----|------|------|
@@ -253,7 +294,7 @@ visual-spider/
 | POST | /api/cdp/generate-selector | 根据点击位置生成选择器 |
 | POST | /api/cdp/preview-selector | 预览选择器匹配结果 |
 
-### 8.3 内容管理
+### 8.4 内容管理
 
 | 方法 | 路径 | 说明 |
 |-----|------|------|

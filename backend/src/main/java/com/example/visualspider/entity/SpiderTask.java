@@ -111,6 +111,7 @@ public class SpiderTask {
     public enum TaskStatus {
         DRAFT,
         ENABLED,
-        DISABLED
+        DISABLED,
+        RUNNING
     }
 }

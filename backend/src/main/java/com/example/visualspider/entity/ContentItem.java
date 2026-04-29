@@ -57,4 +57,29 @@ public class ContentItem {
         /** 已删除 */
         DELETED
     }
+
+    // Manual getters and setters (Lombok not working in build)
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getTaskId() { return taskId; }
+    public void setTaskId(Long taskId) { this.taskId = taskId; }
+
+    public String getSourceUrl() { return sourceUrl; }
+    public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
+
+    public String getFields() { return fields; }
+    public void setFields(String fields) { this.fields = fields; }
+
+    public String getRawHtml() { return rawHtml; }
+    public void setRawHtml(String rawHtml) { this.rawHtml = rawHtml; }
+
+    public ContentStatus getStatus() { return status; }
+    public void setStatus(ContentStatus status) { this.status = status; }
+
+    public LocalDateTime getPublishedAt() { return publishedAt; }
+    public void setPublishedAt(LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

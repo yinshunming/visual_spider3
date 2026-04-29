@@ -1,6 +1,6 @@
 # Visual Spider 开发路线图
 
-**更新日期**: 2026-04-28
+**更新日期**: 2026-04-29
 
 ---
 
@@ -69,12 +69,19 @@ backend/src/main/java/com/example/visualspider/
 **目标**: 完成列表页解析、内容页解析、URL 收集
 
 ### 交付物
-- [ ] CrawlerEngine - 爬虫执行引擎
-- [ ] 列表页解析（containerSelector、itemUrlSelector）
-- [ ] 分页规则支持（INFINITE_SCROLL / PAGE_NUMBER / NEXT_BUTTON）
-- [ ] 内容页字段提取（CSS/XPath 选择器）
-- [ ] 直接URL模式支持（seed_urls）
-- [ ] 任务执行接口 POST /api/tasks/{id}/run
+- [x] CrawlerEngine - 爬虫执行引擎
+- [x] 列表页解析（containerSelector、itemUrlSelector）
+- [x] 分页规则支持（INFINITE_SCROLL / PAGE_NUMBER / NEXT_BUTTON）
+- [x] 内容页字段提取（CSS/XPath 选择器）
+- [x] 直接URL模式支持（seed_urls）
+- [x] 任务执行接口 POST /api/tasks/{id}/run
+- [x] 异步执行（@Async + ThreadPoolTaskExecutor）
+
+### 技术实现
+- **Jsoup 1.17.2**: HTTP 请求 + HTML 解析
+- **W3CDom**: XPath 选择器支持
+- **策略模式**: ListPageParser / DirectUrlParser 分流
+- **异步执行**: @Async("crawlTaskExecutor")
 
 ### 规则数据结构
 ```json
@@ -195,7 +202,7 @@ M6 (调度与发布)
 |--------|------|----------|
 | M1 | ✅ 已完成 | 2026-04-27 |
 | M2 | ✅ 已完成 | 2026-04-28 |
-| M3 | ⬜ 未开始 | - |
+| M3 | ✅ 已完成 | 2026-04-29 |
 | M4 | ⬜ 未开始 | - |
 | M5 | ⬜ 未开始 | - |
 | M6 | ⬜ 未开始 | - |
