@@ -120,17 +120,16 @@
 │   任务管理      │     可视化配置           │      内容管理            │
 │   列表/启停     │   内嵌Chromium(CDP)     │   内容列表/预览/导出     │
 └───────┬────────┴───────────┬─────────────┴─────────────────────────┘
-        │                    │
-        │    DevTools Protocol
-        │    元素点击 → CSS/XPath
-        │
+         │                    │
+         │    前端直接通过 CDP 获取选择器
+         │    不需要后端参与
+         │
 ┌───────▼─────────────────────────────────────────────────────────────┐
 │                        Spring Boot Backend                           │
 ├─────────────────┬─────────────────────────┬─────────────────────────┤
 │   任务管理API     │    爬虫执行引擎          │    内容管理API          │
 │   CRUD + 调度    │   Jsoup + HttpClient    │    CRUD + 预览         │
-│                 │    CdpService           │                        │
-│                 │   (Playwright/Chrome)    │                        │
+│                 │                         │                        │
 └─────────────────┴─────────────────────────┴────────────────────────┘
                           │
                    ┌──────▼──────┐
@@ -147,17 +146,19 @@
 
 ```
 1. 选择"列表页"模式
-2. 输入列表页URL → 后端用Playwright加载 → 返回页面快照
+2. 输入列表页URL → 前端内嵌浏览器直接加载页面
 3. 配置列表页规则：
-   a. 点击"选择容器" → 点击页面上一个列表项 → 生成containerSelector
-   b. 点击"选择链接" → 点击某篇文章链接 → 生成itemUrlSelector
+   a. 点击"选择容器" → 前端CDP直接获取元素CSS/XPath → 生成containerSelector
+   b. 点击"选择链接" → 前端CDP直接获取元素CSS/XPath → 生成itemUrlSelector
 4. 配置分页规则（可选）
 5. 配置内容页字段：
    a. 从列表页点击进入内容页（或直接输入内容页URL）
    b. 点击页面元素配置字段（标题→点击h1，正文→点击div.content）
-   c. 每个字段实时生成CSS/XPath，可手动调整
-6. 保存任务
+   c. 每个字段前端CDP直接生成CSS/XPath，可手动调整
+6. 保存任务（选择器配置发送到后端存储）
 ```
+
+**关键区别**：页面加载和选择器生成都在前端完成，后端只负责存储最终配置
 
 ### 5.2 直接URL模式
 
@@ -193,13 +194,11 @@ visual-spider/
 │   └── src/main/java/com/example/visualspider/
 │       ├── controller/
 │       │   ├── SpiderTaskController.java
-│       │   ├── ContentController.java
-│       │   └── CdpController.java
+│       │   └── ContentController.java
 │       ├── service/
 │       │   ├── SpiderTaskService.java
 │       │   ├── CrawlerEngine.java
-│       │   ├── ContentService.java
-│       │   └── CdpService.java
+│       │   └── ContentService.java
 │       ├── entity/
 │       │   ├── SpiderTask.java
 │       │   ├── SpiderField.java
@@ -221,12 +220,14 @@ visual-spider/
 │       ├── components/
 │       │   └── EmbeddedBrowser.vue
 │       └── api/
-│           └── (API调用)
+│           └── (API调用，仅CRUD和任务执行，无CDP交互)
 └── docs/
     └── superpowers/
         └── specs/
             └── 2026-04-26-visual-spider-design.md
 ```
+
+**说明**：后端不再包含 CdpController、CdpService，选择器生成全部由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成
 
 ---
 
@@ -247,11 +248,11 @@ visual-spider/
 
 ### 8.2 可视化配置
 
+**说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成，不涉及后端 API
+
 | 方法 | 路径 | 说明 |
 |-----|------|------|
-| POST | /api/cdp/load-page | 加载页面并返回DOM快照 |
-| POST | /api/cdp/generate-selector | 根据点击位置生成选择器 |
-| POST | /api/cdp/preview-selector | 预览选择器匹配结果 |
+| （无） | - | 选择器生成在前端完成，无需后端 API |
 
 ### 8.3 内容管理
 

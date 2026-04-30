@@ -107,20 +107,25 @@ backend/src/main/java/com/example/visualspider/
 
 **目标**: 完成内嵌浏览器、元素选择、选择器生成
 
+**架构说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成，**后端不参与**选择器生成过程
+
 ### 交付物
-- [ ] EmbeddedBrowser.vue - Vue3 内嵌 Chromium 组件
-- [ ] CdpController - DevTools Protocol 交互 API
-- [ ] CdpService - Playwright/Chrome CDP 服务
-- [ ] 页面加载与 DOM 快照返回
-- [ ] 元素点击位置 → CSS/XPath 选择器生成
-- [ ] 选择器预览与调试
+- [ ] EmbeddedBrowser.vue - Vue3 内嵌 Chromium 组件（前端 Playwright/CDP）
+- [ ] 页面加载与 DOM 渲染（前端内嵌浏览器）
+- [ ] 元素点击位置 → CSS/XPath 选择器生成（前端 CDP 直接获取）
+- [ ] 选择器预览与调试（前端内嵌浏览器内直接预览）
+- [ ] 任务配置保存到后端（仅 CRUD API）
 
 ### API
+**无 CDP 相关后端 API**
+
+任务配置通过 M2 的 SpiderTaskController 的 CRUD 接口保存：
 | 方法 | 路径 | 说明 |
 |-----|------|------|
-| POST | /api/cdp/load-page | 加载页面并返回DOM快照 |
-| POST | /api/cdp/generate-selector | 根据点击位置生成选择器 |
-| POST | /api/cdp/preview-selector | 预览选择器匹配结果 |
+| POST | /api/tasks | 创建任务（含字段配置） |
+| PUT | /api/tasks/{id} | 更新任务配置 |
+
+（选择器生成在前端完成，不调用后端 API）
 
 ---
 
