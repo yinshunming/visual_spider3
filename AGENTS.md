@@ -11,9 +11,35 @@
 - 关注事务边界、幂等、并发安全、缓存一致性
 
 ## 命令
-- 构建：`./mvnw clean package` 或 `gradle build`
-- 运行：`java -jar target/*.jar` 或 `gradle bootRun`
-- 测试：`./mvnw test` 或 `gradle test`
+- 构建：`mvn clean package -DskipTests`
+- 运行：`java -jar target/visual-spider-*.jar`
+- 测试：`mvn test`
+- 前端构建：待开发
+
+## 测试规范
+
+### 测试基础设施
+- **测试数据库**：H2 内存数据库（`application-test.yml` 配置）
+- **测试框架**：Spring Boot Test + JUnit 5
+- **Mock 框架**：Spring Boot 内置 MockMvc
+
+### 测试分层
+| 层级 | 位置 | 说明 |
+|------|------|------|
+| Controller 测试 | `src/test/java/.../controller/` | REST API 端到端测试 |
+| Service 测试 | `src/test/java/.../service/` | 业务逻辑单元测试 |
+| Repository 测试 | `src/test/java/.../repository/` | 数据访问层测试 |
+
+### 运行测试
+```bash
+cd backend
+mvn test
+```
+
+### 注意事项
+- 测试配置：`src/test/resources/application-test.yml`（H2 内存数据库）
+- 提交前必须通过所有测试
+- 新功能需要同步编写对应的单元测试
 
 ## 参考
 - 全局规范：`C:\Users\yin-s\.config\opencode\AGENTS.md`
@@ -41,21 +67,17 @@
 
 ## 目录结构
 ```
-visual-spider/
-├── backend/           # Spring Boot 后端
+visual_spider3/
+├── backend/                              # Spring Boot 后端
 │   └── src/main/java/com/example/visualspider/
-│       ├── controller/    # REST API
-│       ├── service/        # 业务逻辑 + 爬虫引擎
-│       ├── entity/         # JPA Entity
-│       └── repository/     # 数据访问
-└── frontend/           # Vue3 前端（独立部署）
-    └── src/
-        ├── views/          # 页面
-        │   ├── TaskList.vue       # 任务管理
-        │   ├── TaskConfig.vue     # 可视化配置
-        │   └── ContentManage.vue  # 内容管理
-        └── components/
-            └── EmbeddedBrowser.vue # 内嵌Chromium
+│       ├── controller/                   # REST API
+│       ├── service/                      # 业务逻辑 + 爬虫引擎
+│       ├── entity/                       # JPA Entity
+│       ├── repository/                   # 数据访问
+│       ├── dto/                          # Request/Response DTO
+│       ├── config/                       # 配置类
+│       └── exception/                    # 异常定义
+└── frontend/                            # Vue3 前端（规划中，尚未开发）
 ```
 
 ## 可视化配置流程
