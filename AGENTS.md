@@ -14,7 +14,9 @@
 - 构建：`mvn clean package -DskipTests`
 - 运行：`java -jar target/visual-spider-*.jar`
 - 测试：`mvn test`
-- 前端构建：待开发
+- 前端构建：`cd frontend && npm run build`
+- 前端测试：`cd frontend && npm run test`（Vitest）
+- 前端 E2E：`cd frontend && npm run test:e2e`（Playwright）
 
 ## 测试规范
 
@@ -77,7 +79,14 @@ visual_spider3/
 │       ├── dto/                          # Request/Response DTO
 │       ├── config/                       # 配置类
 │       └── exception/                    # 异常定义
-└── frontend/                            # Vue3 前端（规划中，尚未开发）
+├── frontend/                             # Vue3 前端（已完成）
+│   ├── src/
+│   │   ├── views/                       # 页面组件
+│   │   ├── components/                  # 公共组件
+│   │   ├── api/                         # API 调用
+│   │   └── router/                      # 路由配置
+│   └── tests/
+│       └── e2e/                         # Playwright E2E 测试
 ```
 
 ## 可视化配置流程

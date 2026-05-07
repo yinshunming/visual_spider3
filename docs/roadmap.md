@@ -110,11 +110,12 @@ backend/src/main/java/com/example/visualspider/
 **架构说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成，**后端不参与**选择器生成过程
 
 ### 交付物
-- [ ] EmbeddedBrowser.vue - Vue3 内嵌 Chromium 组件（前端 Playwright/CDP）
-- [ ] 页面加载与 DOM 渲染（前端内嵌浏览器）
-- [ ] 元素点击位置 → CSS/XPath 选择器生成（前端 CDP 直接获取）
-- [ ] 选择器预览与调试（前端内嵌浏览器内直接预览）
-- [ ] 任务配置保存到后端（仅 CRUD API）
+- [x] EmbeddedBrowser.vue - Vue3 内嵌 Chromium 组件（前端 Playwright/CDP）
+- [x] 页面加载与 DOM 渲染（前端内嵌浏览器）
+- [x] 元素点击位置 → CSS/XPath 选择器生成（前端 CDP 直接获取）
+- [x] 选择器预览与调试（前端内嵌浏览器内直接预览）
+- [x] 任务配置保存到后端（仅 CRUD API）
+- [x] Playwright E2E 测试框架（26 个测试用例全部通过）
 
 ### API
 **无 CDP 相关后端 API**
@@ -208,6 +209,6 @@ M6 (调度与发布)
 | M1 | ✅ 已完成 | 2026-04-27 |
 | M2 | ✅ 已完成 | 2026-04-28 |
 | M3 | ✅ 已完成 | 2026-04-29 |
-| M4 | ⬜ 未开始 | - |
+| M4 | ✅ 已完成 | 2026-05-07 |
 | M5 | ⬜ 未开始 | - |
 | M6 | ⬜ 未开始 | - |
