@@ -27,13 +27,13 @@ public class SpiderTask {
     @Column(name = "list_page_url", length = 2048)
     private String listPageUrl;
 
-    @Column(name = "list_page_rule", columnDefinition = "jsonb")
+    @Column(name = "list_page_rule", columnDefinition = "TEXT")
     private String listPageRule;
 
     @Column(name = "seed_urls", columnDefinition = "text[]")
     private String[] seedUrls;
 
-    @Column(name = "content_page_rule", columnDefinition = "jsonb")
+    @Column(name = "content_page_rule", columnDefinition = "TEXT")
     private String contentPageRule;
 
     @Column(name = "schedule_cron", length = 100)

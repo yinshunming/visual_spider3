@@ -2,10 +2,12 @@ package com.example.visualspider.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+@Service
 public class DirectUrlParser {
 
     private static final Logger log = LoggerFactory.getLogger(DirectUrlParser.class);

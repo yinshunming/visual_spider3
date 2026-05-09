@@ -14,6 +14,7 @@
 - 构建：`mvn clean package -DskipTests`
 - 运行：`java -jar target/visual-spider-*.jar`
 - 测试：`mvn test`
+- 前端开发：`cd frontend && npm run dev`（端口 3000，代理 /api 到 8080）
 - 前端构建：`cd frontend && npm run build`
 - 前端测试：`cd frontend && npm run test`（Vitest）
 - 前端 E2E：`cd frontend && npm run test:e2e`（Playwright）

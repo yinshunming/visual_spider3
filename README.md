@@ -25,7 +25,7 @@ visual_spider3/
 │       ├── dto/                # Request/Response DTO
 │       ├── config/             # 配置类
 │       └── exception/           # 异常定义
-├── frontend/                   # Vue3 前端（规划中）
+├── frontend/                   # Vue3 前端（已完成）
 ├── docs/                       # 项目文档
 │   └── roadmap.md             # 开发路线图
 └── openspec/                   # OpenSpec 变更追踪
@@ -42,7 +42,7 @@ visual_spider3/
 ### 1. 创建数据库
 
 ```sql
-CREATE DATABASE visualspider;
+CREATE DATABASE postgres;
 ```
 
 ### 2. 配置数据库连接
@@ -52,9 +52,9 @@ CREATE DATABASE visualspider;
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/visualspider
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: your_password
+    password: 123456
 ```
 
 ### 3. 构建项目
@@ -71,6 +71,17 @@ java -jar target/visual-spider-0.0.1-SNAPSHOT.jar
 ```
 
 服务启动于 `http://localhost:8080`
+
+### 5. 前端开发（可选）
+
+前端默认集成在后端JAR中（`backend/src/main/resources/static/`），也可独立开发：
+
+```bash
+cd frontend
+npm install
+npm run dev      # 开发服务器 http://localhost:3000
+npm run build    # 构建到 backend/src/main/resources/static/
+```
 
 ## API 文档
 
