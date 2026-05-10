@@ -1,6 +1,6 @@
 # Visual Spider 开发路线图
 
-**更新日期**: 2026-04-29
+**更新日期**: 2026-05-10
 
 ---
 
@@ -135,13 +135,15 @@ backend/src/main/java/com/example/visualspider/
 **目标**: 完成内容存储、预览、编辑、导出
 
 ### 交付物
-- [ ] ContentController - 内容 CRUD API
-- [ ] ContentService - 内容业务逻辑
-- [ ] ContentItemRepository - 分页查询
-- [ ] 内容状态管理（PUBLISHED / PENDING / DELETED）
-- [ ] 内容预览界面
-- [ ] 内容编辑功能
-- [ ] Excel/CSV 导出
+- [x] ContentController - 内容 CRUD API
+- [x] ContentService - 内容业务逻辑
+- [x] ContentItemRepository - 分页查询
+- [x] 内容状态管理（PUBLISHED / PENDING / DELETED）
+- [x] 内容预览界面
+- [x] 内容编辑功能
+- [x] Excel/CSV 导出
+- [x] ContentControllerTest - API 集成测试（21 tests）
+- [x] E2E 测试框架 - Playwright E2E（50/54 tests）
 
 ### API
 | 方法 | 路径 | 说明 |
@@ -210,5 +212,5 @@ M6 (调度与发布)
 | M2 | ✅ 已完成 | 2026-04-28 |
 | M3 | ✅ 已完成 | 2026-04-29 |
 | M4 | ✅ 已完成 | 2026-05-07 |
-| M5 | ⬜ 未开始 | - |
+| M5 | ✅ 已完成 | 2026-05-10 |
 | M6 | ⬜ 未开始 | - |

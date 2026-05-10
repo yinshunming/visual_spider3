@@ -133,7 +133,7 @@ mvn clean package -DskipTests
 | M2 | 任务管理 | ✅ 已完成 |
 | M3 | 爬虫核心 | ✅ 已完成 |
 | M4 | 可视化配置 | ✅ 已完成（E2E 测试：26/26 通过） |
-| M5 | 内容管理 | ⬜ 未开始 |
+| M5 | 内容管理 | ✅ 已完成（API 测试：21/21 通过，E2E：50/54 通过） |
 | M6 | 调度与发布 | ⬜ 未开始 |
 
 详见 [docs/roadmap.md](docs/roadmap.md)

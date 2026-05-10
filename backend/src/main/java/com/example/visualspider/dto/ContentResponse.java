@@ -1,61 +1,39 @@
-package com.example.visualspider.entity;
+package com.example.visualspider.dto;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
-import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
+import com.example.visualspider.entity.ContentItem;
+import com.example.visualspider.entity.ContentItem.ContentStatus;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * 爬取内容项实体类
+ * ContentItem Response DTO
  */
-@Entity
-@Table(name = "content_items")
-public class ContentItem {
+public class ContentResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "task_id", nullable = false)
     private Long taskId;
-
-    @Column(name = "source_url", length = 2048)
     private String sourceUrl;
-
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
     private Map<String, Object> fields;
-
-    @Column(name = "raw_html", columnDefinition = "TEXT")
     private String rawHtml;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ContentStatus status = ContentStatus.PENDING;
-
-    @Column(name = "published_at")
+    private ContentStatus status;
     private LocalDateTime publishedAt;
-
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
+    public ContentResponse() {
     }
 
-    /**
-     * 内容状态枚举
-     */
-    public enum ContentStatus {
-        /** 已发布 */
-        PUBLISHED,
-        /** 待处理 */
-        PENDING,
-        /** 已删除 */
-        DELETED
+    public static ContentResponse from(ContentItem item) {
+        ContentResponse response = new ContentResponse();
+        response.setId(item.getId());
+        response.setTaskId(item.getTaskId());
+        response.setSourceUrl(item.getSourceUrl());
+        response.setRawHtml(item.getRawHtml());
+        response.setStatus(item.getStatus());
+        response.setPublishedAt(item.getPublishedAt());
+        response.setCreatedAt(item.getCreatedAt());
+        response.setFields(item.getFields() != null ? item.getFields() : Map.of());
+        return response;
     }
 
     // Getters and Setters

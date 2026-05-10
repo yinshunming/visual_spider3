@@ -1,6 +1,9 @@
 package com.example.visualspider.dto;
 
+import com.example.visualspider.entity.ContentItem.ContentStatus;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Map;
 
 /**
  * ContentItem Request DTO
@@ -9,14 +12,15 @@ public class ContentItemRequest {
 
     private Long id;
 
-    @NotNull(message = "taskId is required")
     private Long taskId;
 
     private String sourceUrl;
 
-    private String fields;
+    private Map<String, Object> fields;
 
     private String rawHtml;
+
+    private ContentStatus status;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -28,9 +32,12 @@ public class ContentItemRequest {
     public String getSourceUrl() { return sourceUrl; }
     public void setSourceUrl(String sourceUrl) { this.sourceUrl = sourceUrl; }
 
-    public String getFields() { return fields; }
-    public void setFields(String fields) { this.fields = fields; }
+    public Map<String, Object> getFields() { return fields; }
+    public void setFields(Map<String, Object> fields) { this.fields = fields; }
 
     public String getRawHtml() { return rawHtml; }
     public void setRawHtml(String rawHtml) { this.rawHtml = rawHtml; }
+
+    public ContentStatus getStatus() { return status; }
+    public void setStatus(ContentStatus status) { this.status = status; }
 }

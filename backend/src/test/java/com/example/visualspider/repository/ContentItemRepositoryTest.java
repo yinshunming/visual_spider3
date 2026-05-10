@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,7 @@ class ContentItemRepositoryTest {
         ContentItem item = new ContentItem();
         item.setTaskId(taskId);
         item.setSourceUrl("https://example.com/article/1");
-        item.setFields("{\"title\": \"Test\"}");
+        item.setFields(Map.of("title", "Test"));
         item.setStatus(ContentStatus.PENDING);
 
         ContentItem saved = contentItemRepository.save(item);
