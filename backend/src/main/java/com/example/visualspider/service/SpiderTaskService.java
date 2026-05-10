@@ -9,6 +9,7 @@ import com.example.visualspider.repository.SpiderTaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +39,9 @@ public class SpiderTaskService {
 
     @Transactional
     public SpiderTask save(SpiderTaskRequest request) {
+        // 校验 scheduleCron 合法性
+        validateScheduleCron(request.getScheduleCron());
+
         SpiderTask task = new SpiderTask();
         task.setName(request.getName());
         task.setDescription(request.getDescription());
@@ -60,6 +64,9 @@ public class SpiderTaskService {
 
     @Transactional
     public SpiderTask update(Long id, SpiderTaskRequest request) {
+        // 校验 scheduleCron 合法性
+        validateScheduleCron(request.getScheduleCron());
+
         SpiderTask task = spiderTaskRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Task not found: " + id));
 
@@ -176,5 +183,45 @@ public class SpiderTaskService {
 
     public List<SpiderField> getFieldsByTaskId(Long taskId) {
         return spiderFieldRepository.findByTaskIdOrderByDisplayOrder(taskId);
+    }
+
+    /**
+     * 校验 scheduleCron 表达式合法性
+     * - 空值允许（表示不使用定时调度）
+     * - 非法表达式抛 IllegalArgumentException
+     * - 每秒级 cron 不允许，最小间隔 1 分钟
+     */
+    private void validateScheduleCron(String scheduleCron) {
+        if (scheduleCron == null || scheduleCron.isBlank()) {
+            return; // 允许为空
+        }
+
+        String trimmed = scheduleCron.trim();
+        String[] fields = trimmed.split("\\s+");
+
+        // 5字段 cron（标准 Unix 格式）：补充第6字段（秒），Spring 6 需要 6 字段
+        // 格式: second minute hour day month weekday
+        // "33 * * * *" -> "0 33 * * * *"
+        String expressionToParse = trimmed;
+        if (fields.length == 5) {
+            expressionToParse = "0 " + trimmed; // 5-field: prepend second=0 at beginning
+        } else if (fields.length == 6) {
+            expressionToParse = trimmed;
+        } else {
+            throw new IllegalArgumentException(
+                "Cron expression must have 5 or 6 fields, got " + fields.length + ": " + scheduleCron);
+        }
+
+        try {
+            CronExpression.parse(expressionToParse);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid cron expression: " + scheduleCron, e);
+        }
+
+        // 禁止每秒级 cron（5字段 * * * * * 或 6字段 * * * * * *）
+        if (trimmed.equals("* * * * *") || trimmed.equals("* * * * * *")) {
+            throw new IllegalArgumentException(
+                "Cron expression triggers too frequently. Minimum interval is 1 minute.");
+        }
     }
 }

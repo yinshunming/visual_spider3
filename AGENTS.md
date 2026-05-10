@@ -12,7 +12,11 @@
 
 ## 命令
 - 构建：`mvn clean package -DskipTests`
-- 运行：`java -jar target/visual-spider-*.jar`
+- 运行（后台带窗口）：
+  ```
+  cmd /c start "visual-spider-backend" /MIN cmd /c "cd /d %CD% && java -jar target\visual-spider-0.0.1-SNAPSHOT.jar --spring.output.ansi.enabled=never >> backend.log 2>>&1"
+  ```
+  或直接在前端项目目录运行：`java -jar backend/target/visual-spider-0.0.1-SNAPSHOT.jar`
 - 测试：`mvn test`
 - 前端开发：`cd frontend && npm run dev`（端口 3000，代理 /api 到 8080）
 - 前端构建：`cd frontend && npm run build`

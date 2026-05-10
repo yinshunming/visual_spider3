@@ -21,6 +21,15 @@ spring:
     serialization:
       write-dates-as-timestamps: false
 
+spider:
+  schedule:
+    enabled: true
+    thread-pool-size: 3
+  crawler:
+    thread-pool-size: 10
+    retry-times: 2
+    timeout: 30000
+
 logging:
   level:
     root: INFO

@@ -1,0 +1,64 @@
+- generic [ref=e4]:
+  - heading "Visual Spider - 可视化爬虫配置" [level=2] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - button "新建任务" [ref=e10] [cursor=pointer]:
+        - generic [ref=e11]: 新建任务
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - table [ref=e15]:
+            - rowgroup [ref=e23]:
+              - row "ID 任务名称 模式 状态 创建时间 操作" [ref=e24]:
+                - columnheader "ID" [ref=e25]:
+                  - generic [ref=e26]: ID
+                - columnheader "任务名称" [ref=e27]:
+                  - generic [ref=e28]: 任务名称
+                - columnheader "模式" [ref=e29]:
+                  - generic [ref=e30]: 模式
+                - columnheader "状态" [ref=e31]:
+                  - generic [ref=e32]: 状态
+                - columnheader "创建时间" [ref=e33]:
+                  - generic [ref=e34]: 创建时间
+                - columnheader "操作" [ref=e35]:
+                  - generic [ref=e36]: 操作
+          - table [ref=e41]:
+            - rowgroup [ref=e49]:
+              - row "1 Test Task 列表页 草稿 2026/5/9 22:32:43 配置 启用 停用 删除" [ref=e50]:
+                - cell "1" [ref=e51]:
+                  - generic [ref=e52]: "1"
+                - cell "Test Task" [ref=e53]:
+                  - generic [ref=e54]: Test Task
+                - cell "列表页" [ref=e55]:
+                  - generic [ref=e56]: 列表页
+                - cell "草稿" [ref=e57]:
+                  - generic [ref=e58]:
+                    - generic:
+                      - generic: 草稿
+                - cell "2026/5/9 22:32:43" [ref=e59]:
+                  - generic [ref=e60]: 2026/5/9 22:32:43
+                - cell "配置 启用 停用 删除" [ref=e61]:
+                  - generic [ref=e62]:
+                    - button "配置" [ref=e63] [cursor=pointer]:
+                      - generic [ref=e64]: 配置
+                    - button "启用" [ref=e65] [cursor=pointer]:
+                      - generic [ref=e66]: 启用
+                    - button "停用" [ref=e67] [cursor=pointer]:
+                      - generic [ref=e68]: 停用
+                    - button "删除" [ref=e69] [cursor=pointer]:
+                      - generic [ref=e70]: 删除
+        - img [ref=e73]
+      - generic [ref=e75]:
+        - generic [ref=e76]: Total 1
+        - generic [ref=e79] [cursor=pointer]:
+          - generic:
+            - combobox [ref=e81]
+            - generic [ref=e82]: 10/page
+          - img [ref=e85]
+        - button "Go to previous page" [disabled] [ref=e87]:
+          - generic:
+            - img
+        - list [ref=e88]:
+          - listitem "page 1" [ref=e89]: "1"
+        - button "Go to next page" [disabled] [ref=e90]:
+          - generic:
+            - img

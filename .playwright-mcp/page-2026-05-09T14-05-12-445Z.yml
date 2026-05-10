@@ -1,0 +1,156 @@
+- generic [ref=e4]:
+  - heading "Visual Spider - 可视化爬虫配置" [level=2] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e64]:
+      - generic [ref=e65]: 新建任务
+      - generic [ref=e67]:
+        - separator [ref=e68]:
+          - generic [ref=e69]: 基本信息
+        - generic [ref=e70]:
+          - generic [ref=e71]: "* 任务名称"
+          - textbox "* 任务名称" [ref=e75]:
+            - /placeholder: 请输入任务名称
+        - generic [ref=e76]:
+          - generic [ref=e77]: 任务描述
+          - textbox "任务描述" [ref=e80]:
+            - /placeholder: 可选
+        - separator [ref=e81]:
+          - generic [ref=e82]: URL 配置
+        - generic [ref=e83]:
+          - generic [ref=e84]: "* 模式"
+          - radiogroup "* 模式" [ref=e86]:
+            - generic [ref=e87] [cursor=pointer]:
+              - radio "列表页模式" [checked] [ref=e89]
+              - generic [ref=e91]: 列表页模式
+            - generic [ref=e92] [cursor=pointer]:
+              - radio "直接URL模式" [ref=e94]
+              - generic [ref=e96]: 直接URL模式
+        - generic [ref=e97]:
+          - generic [ref=e98]: "* 列表页URL"
+          - textbox "* 列表页URL" [ref=e102]:
+            - /placeholder: https://example.com/articles
+        - separator [ref=e103]:
+          - generic [ref=e104]: 列表页规则配置
+        - generic [ref=e105]:
+          - paragraph [ref=e106]: 点击下方"加载页面"按钮打开内嵌浏览器，然后：
+          - list [ref=e107]:
+            - listitem [ref=e108]:
+              - text: 点击列表中的容器元素（如
+              - code [ref=e109]: div.article-list > div.item
+              - text: ）
+            - listitem [ref=e110]:
+              - text: 点击内容链接元素（如
+              - code [ref=e111]: a.title
+              - text: ）
+        - generic [ref=e112]:
+          - generic [ref=e113]: 容器选择器
+          - generic [ref=e115]:
+            - textbox "容器选择器" [ref=e117]:
+              - /placeholder: 点击容器元素后自动生成
+            - button "选取" [ref=e119] [cursor=pointer]:
+              - generic [ref=e120]: 选取
+        - generic [ref=e121]:
+          - generic [ref=e122]: 链接选择器
+          - generic [ref=e124]:
+            - textbox "链接选择器" [ref=e126]:
+              - /placeholder: 点击链接元素后自动生成
+            - button "选取" [ref=e128] [cursor=pointer]:
+              - generic [ref=e129]: 选取
+        - generic [ref=e130]:
+          - generic [ref=e131]: 分页类型
+          - generic [ref=e134] [cursor=pointer]:
+            - generic:
+              - combobox "分页类型" [ref=e136]
+              - generic [ref=e137]: 无限滚动
+            - img [ref=e140]
+        - separator [ref=e142]:
+          - generic [ref=e143]: 内容页字段配置
+        - paragraph [ref=e145]: 添加需要提取的字段。点击"加载页面"进入内容页后，点击页面元素选择器。
+        - generic [ref=e146]:
+          - generic [ref=e147]:
+            - generic [ref=e148]: 字段名称
+            - textbox "字段名称" [ref=e152]:
+              - /placeholder: "如: title"
+          - generic [ref=e153]:
+            - generic [ref=e154]: 显示名称
+            - textbox "显示名称" [ref=e158]:
+              - /placeholder: "如: 标题"
+          - generic [ref=e159]:
+            - generic [ref=e160]: 字段类型
+            - generic [ref=e163] [cursor=pointer]:
+              - generic:
+                - combobox "字段类型" [ref=e165]
+                - generic [ref=e166]: 文本
+              - img [ref=e169]
+          - generic [ref=e171]:
+            - generic [ref=e172]: 选择器
+            - generic [ref=e174]:
+              - textbox "选择器" [ref=e176]:
+                - /placeholder: 点击选择器后自动生成
+              - button "选取" [ref=e178] [cursor=pointer]:
+                - generic [ref=e179]: 选取
+          - generic [ref=e180]:
+            - generic [ref=e181]: 选择器类型
+            - radiogroup "选择器类型" [ref=e183]:
+              - generic [ref=e184] [cursor=pointer]:
+                - radio "CSS" [checked] [ref=e186]
+                - generic [ref=e188]: CSS
+              - generic [ref=e189] [cursor=pointer]:
+                - radio "XPath" [ref=e191]
+                - generic [ref=e193]: XPath
+          - generic [ref=e194]:
+            - generic [ref=e195]: 提取类型
+            - generic [ref=e198] [cursor=pointer]:
+              - generic:
+                - combobox "提取类型" [ref=e200]
+                - generic [ref=e201]: 文本
+              - img [ref=e204]
+          - generic [ref=e206]:
+            - generic [ref=e207]: 默认值
+            - textbox "默认值" [ref=e211]:
+              - /placeholder: 可选
+          - generic [ref=e212]:
+            - generic [ref=e213]: 必填
+            - generic [ref=e215]:
+              - switch "必填"
+          - button "删除字段" [ref=e218] [cursor=pointer]:
+            - generic [ref=e219]: 删除字段
+          - separator [ref=e220]
+        - button "+ 添加字段" [ref=e221] [cursor=pointer]:
+          - generic [ref=e222]: + 添加字段
+        - separator [ref=e223]:
+          - generic [ref=e224]: 内嵌浏览器
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - 'textbox "输入URL，例如: https://example.com" [ref=e229]'
+              - button "加载页面" [disabled] [ref=e231]:
+                - generic [ref=e232]: 加载页面
+            - radiogroup "radio-group" [ref=e233]:
+              - generic [ref=e234]:
+                - radio "CSS 选择器" [checked] [ref=e235]
+                - generic [ref=e236] [cursor=pointer]: CSS 选择器
+              - generic [ref=e237]:
+                - radio "XPath" [ref=e238]
+                - generic [ref=e239] [cursor=pointer]: XPath
+            - generic [ref=e240] [cursor=pointer]:
+              - generic [ref=e241]:
+                - checkbox "点击选择模式"
+              - generic [ref=e243]: 点击选择模式
+          - generic [ref=e244]:
+            - generic [ref=e247]:
+              - img [ref=e249]
+              - paragraph [ref=e252]: 输入URL并点击加载页面开始
+            - generic [ref=e253]:
+              - heading "生成的选择器" [level=4] [ref=e254]
+              - generic [ref=e255]:
+                - generic [ref=e256]: "CSS 选择器:"
+                - textbox "点击页面元素将显示 CSS 选择器..." [ref=e258]
+              - generic [ref=e259]:
+                - generic [ref=e260]: "XPath:"
+                - textbox "点击页面元素将显示 XPath..." [ref=e262]
+        - generic [ref=e264]:
+          - button "创建任务" [ref=e265] [cursor=pointer]:
+            - generic [ref=e266]: 创建任务
+          - button "取消" [ref=e267] [cursor=pointer]:
+            - generic [ref=e268]: 取消

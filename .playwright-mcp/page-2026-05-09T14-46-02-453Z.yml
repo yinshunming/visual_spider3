@@ -1,0 +1,43 @@
+- generic [ref=e4]:
+  - heading "Visual Spider - 可视化爬虫配置" [level=2] [ref=e6]
+  - main [ref=e7]:
+    - generic [ref=e8]:
+      - button "新建任务" [ref=e10] [cursor=pointer]:
+        - generic [ref=e11]: 新建任务
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - table [ref=e15]:
+            - rowgroup [ref=e23]:
+              - row "ID 任务名称 模式 状态 创建时间 操作" [ref=e24]:
+                - columnheader "ID" [ref=e25]:
+                  - generic [ref=e26]: ID
+                - columnheader "任务名称" [ref=e27]:
+                  - generic [ref=e28]: 任务名称
+                - columnheader "模式" [ref=e29]:
+                  - generic [ref=e30]: 模式
+                - columnheader "状态" [ref=e31]:
+                  - generic [ref=e32]: 状态
+                - columnheader "创建时间" [ref=e33]:
+                  - generic [ref=e34]: 创建时间
+                - columnheader "操作" [ref=e35]:
+                  - generic [ref=e36]: 操作
+          - generic [ref=e40]:
+            - table:
+              - rowgroup
+            - generic [ref=e42]: No Data
+        - img [ref=e45]
+      - generic [ref=e47]:
+        - generic [ref=e48]: Total 0
+        - generic [ref=e51] [cursor=pointer]:
+          - generic:
+            - combobox [ref=e53]
+            - generic [ref=e54]: 10/page
+          - img [ref=e57]
+        - button "Go to previous page" [disabled] [ref=e59]:
+          - generic:
+            - img
+        - list [ref=e60]:
+          - listitem "page 1" [ref=e61]: "1"
+        - button "Go to next page" [disabled] [ref=e62]:
+          - generic:
+            - img

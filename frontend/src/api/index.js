@@ -45,4 +45,29 @@ export function runTask(id) {
   return api.post(`/tasks/${id}/run`)
 }
 
+// 内容列表（分页）
+export function getContents(params) {
+  return api.get('/contents', { params })
+}
+
+// 获取单个内容
+export function getContent(id) {
+  return api.get(`/contents/${id}`)
+}
+
+// 更新内容
+export function updateContent(id, data) {
+  return api.put(`/contents/${id}`, data)
+}
+
+// 删除内容
+export function deleteContent(id) {
+  return api.delete(`/contents/${id}`)
+}
+
+// 导出内容
+export function exportContent(params) {
+  return api.get('/contents/export', { params, responseType: 'blob' })
+}
+
 export default api
