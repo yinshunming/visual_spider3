@@ -71,6 +71,7 @@ mvn test
 | SpiderTask | 爬虫任务（支持列表页/直接URL双模式） |
 | SpiderField | 自定义字段（text/image/link/richText） |
 | ContentItem | 爬取内容（JSONB 存储动态字段值） |
+| ExecutionLog | 爬虫执行日志（记录开始/结束时间、状态、耗时、条数） |
 
 ## 目录结构
 ```

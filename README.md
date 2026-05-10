@@ -101,12 +101,19 @@ npm run build    # 构建到 backend/src/main/resources/static/
 ### 内容管理
 
 | 方法 | 路径 | 说明 |
-|------|------|------|
+|------|------|
 | GET | /api/contents | 分页查询内容列表 |
 | GET | /api/contents/{id} | 获取内容详情 |
 | PUT | /api/contents/{id} | 更新内容 |
 | DELETE | /api/contents/{id} | 删除内容 |
 | GET | /api/contents/export | 导出内容 |
+
+### 执行历史
+
+| 方法 | 路径 | 说明 |
+|------|------|
+| GET | /api/executions | 分页查询执行历史（支持 taskId 过滤） |
+| GET | /api/executions/{id} | 执行详情（含耗时、条数、错误信息） |
 
 ## 开发指南
 
@@ -134,7 +141,7 @@ mvn clean package -DskipTests
 | M3 | 爬虫核心 | ✅ 已完成 |
 | M4 | 可视化配置 | ✅ 已完成（E2E 测试：26/26 通过） |
 | M5 | 内容管理 | ✅ 已完成（API 测试：21/21 通过，E2E：50/54 通过） |
-| M6 | 调度与发布 | ⬜ 未开始 |
+| M6 | 调度与发布 | ✅ 进行中（m6a ✅, m6b ✅） |
 
 详见 [docs/roadmap.md](docs/roadmap.md)
 

@@ -165,7 +165,8 @@ backend/src/main/java/com/example/visualspider/
 - [x] Cron 表达式配置与解析（m6a-scheduling-core）
 - [x] 定时任务调度执行（m6a-scheduling-core）
 - [x] 错误处理与重试机制（m6a-scheduling-core）
-- [ ] 任务执行日志持久化（m6b-scheduling-ops）
+- [x] 任务执行日志持久化 + 查询 API（m6b-scheduling-ops）
+- [x] 爬虫线程池独立配置 + Jsoup 超时配置（m6b-scheduling-ops）
 - [ ] 性能优化（并发爬取、连接池）
 - [ ] 监控与告警（可选）
 
@@ -213,4 +214,4 @@ M6 (调度与发布)
 | M3 | ✅ 已完成 | 2026-04-29 |
 | M4 | ✅ 已完成 | 2026-05-07 |
 | M5 | ✅ 已完成 | 2026-05-10 |
-| M6 | 🚧 进行中 | m6a ✅, m6b 待做 |
+| M6 | 🚧 进行中 | m6a ✅, m6b ✅ |

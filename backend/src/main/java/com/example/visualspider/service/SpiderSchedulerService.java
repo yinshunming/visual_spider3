@@ -1,5 +1,6 @@
 package com.example.visualspider.service;
 
+import com.example.visualspider.entity.ExecutionLog.TriggerType;
 import com.example.visualspider.entity.SpiderTask;
 import com.example.visualspider.entity.SpiderTask.TaskStatus;
 import com.example.visualspider.exception.CrawlException;
@@ -89,9 +90,10 @@ public class SpiderSchedulerService {
      */
     private void triggerTask(SpiderTask task) {
         Long taskId = task.getId();
-        log.info("Triggering scheduled task {}: {}", taskId, task.getName());
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("Triggering scheduled task: taskId={}, triggerType={}, startTime={}",
+                taskId, TriggerType.SCHEDULED, startTime);
 
-        // 乐观锁：检查 status != RUNNING 并更新为 RUNNING
         if (!tryAcquireLock(taskId)) {
             log.debug("Task {} is already running, skipping", taskId);
             return;
@@ -99,13 +101,11 @@ public class SpiderSchedulerService {
 
         boolean crawlSuccess = false;
 
-        // 重试循环：指数退避 1s → 2s → 4s
         for (int i = 0; i <= retryTimes; i++) {
             try {
-                // 同步执行爬取
-                crawlerEngine.execute(taskId, task);
+                crawlerEngine.execute(taskId, task, TriggerType.SCHEDULED);
                 crawlSuccess = true;
-                break; // 成功，退出重试循环
+                break;
             } catch (CrawlException e) {
                 if (i < retryTimes) {
                     long sleepMs = 1000L * (1 << i);
@@ -122,18 +122,15 @@ public class SpiderSchedulerService {
                             taskId, retryTimes + 1, e.getMessage());
                 }
             } catch (Exception e) {
-                // 非网络异常（如配置错误、解析错误）不重试
                 log.error("Task {} failed with non-retryable error: {}", taskId, e.getMessage());
                 break;
             }
         }
 
         if (crawlSuccess) {
-            // 爬取成功后，调用异步执行（后台保存结果）
-            crawlerEngine.executeAsync(taskId, task);
+            crawlerEngine.executeAsync(taskId, task, TriggerType.SCHEDULED);
             log.info("Task {} triggered successfully", taskId);
         } else {
-            // 所有重试耗尽或非网络异常：回滚状态为 ENABLED
             rollbackStatus(taskId);
         }
     }

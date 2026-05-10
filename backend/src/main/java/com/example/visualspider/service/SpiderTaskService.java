@@ -1,6 +1,7 @@
 package com.example.visualspider.service;
 
 import com.example.visualspider.dto.*;
+import com.example.visualspider.entity.ExecutionLog.TriggerType;
 import com.example.visualspider.entity.SpiderField;
 import com.example.visualspider.entity.SpiderTask;
 import com.example.visualspider.entity.SpiderTask.TaskStatus;
@@ -159,7 +160,7 @@ public class SpiderTaskService {
         task.setStatus(TaskStatus.RUNNING);
         spiderTaskRepository.save(task);
 
-        crawlerEngine.executeAsync(id, task);
+        crawlerEngine.executeAsync(id, task, TriggerType.MANUAL);
     }
 
     private void saveFields(Long taskId, List<FieldRequest> fieldRequests) {

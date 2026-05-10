@@ -1,7 +1,11 @@
 package com.example.visualspider.service;
 
+import com.example.visualspider.entity.ExecutionLog;
+import com.example.visualspider.entity.ExecutionLog.ExecutionStatus;
+import com.example.visualspider.entity.ExecutionLog.TriggerType;
 import com.example.visualspider.entity.SpiderField;
 import com.example.visualspider.entity.SpiderTask;
+import com.example.visualspider.repository.ExecutionLogRepository;
 import com.example.visualspider.repository.SpiderFieldRepository;
 import com.example.visualspider.repository.SpiderTaskRepository;
 import org.jsoup.nodes.Document;
@@ -11,13 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 爬虫引擎服务类
- */
 @Service
 public class CrawlerEngine {
 
@@ -41,75 +43,108 @@ public class CrawlerEngine {
     @Autowired
     private SpiderTaskRepository spiderTaskRepository;
 
-    /**
-     * 执行爬虫任务
-     * @param taskId 任务ID
-     * @param task 任务实体
-     */
-    public void execute(Long taskId, SpiderTask task) {
-        log.info("Starting crawl for task {}: {}", taskId, task.getName());
+    @Autowired
+    private ExecutionLogRepository executionLogRepository;
 
-        List<String> urls = new ArrayList<>();
+    public void execute(Long taskId, SpiderTask task, TriggerType triggerType) {
+        ExecutionLog executionLog = null;
+        long startTime = System.currentTimeMillis();
+        int itemsCrawled = 0;
+        String errorMessage = null;
 
-        // Route by URL mode
-        if (task.getUrlMode() == SpiderTask.UrlMode.LIST_PAGE) {
-            // Parse list page rule JSON
-            ListPageParser.ListPageRule rule = listPageParser.parseListPageRule(task.getListPageRule());
-            // Crawl all pages to get item URLs
-            urls = listPageParser.crawlAllPages(task.getListPageUrl(), rule);
-        } else {
-            // DIRECT_URL mode - use seed URLs directly
-            urls = directUrlParser.getUrls(task.getSeedUrls());
-        }
+        try {
+            log.info("Starting crawl for task {}: {}", taskId, task.getName());
 
-        log.info("Found {} URLs to crawl for task {}", urls.size(), taskId);
-
-        // Get field configurations for this task
-        List<SpiderField> fields = spiderFieldRepository.findByTaskIdOrderByDisplayOrder(taskId);
-
-        // Track success/failure counts
-        int successCount = 0;
-        int failedCount = 0;
-
-        // Extract content from each URL
-        for (String url : urls) {
             try {
-                // Fetch content page
-                Document doc = contentPageExtractor.fetchContentPage(url);
-
-                if (doc != null) {
-                    // Extract field values
-                    Map<String, Object> extractedFields = contentPageExtractor.extract(doc, fields);
-
-                    // Save content item using ContentService.saveContent()
-                    contentService.saveContent(taskId, url, extractedFields, doc.html());
-                    successCount++;
-                    log.debug("Successfully crawled URL: {}", url);
-                } else {
-                    failedCount++;
-                    log.warn("Failed to fetch document for URL: {}", url);
-                }
+                executionLog = new ExecutionLog();
+                executionLog.setTaskId(taskId);
+                executionLog.setTriggerType(triggerType);
+                executionLog.setStartedAt(LocalDateTime.now());
+                executionLog.setStatus(ExecutionStatus.RUNNING);
+                executionLog = executionLogRepository.save(executionLog);
             } catch (Exception e) {
-                failedCount++;
-                log.error("Error crawling URL {}: {}", url, e.getMessage());
-                // Continue with next URL - don't stop the crawl
+                log.warn("Failed to create execution log for task {}: {}", taskId, e.getMessage());
             }
-        }
 
-        log.info("Crawl completed for task {}: success={}, failed={}", taskId, successCount, failedCount);
+            List<String> urls = new ArrayList<>();
+
+            if (task.getUrlMode() == SpiderTask.UrlMode.LIST_PAGE) {
+                ListPageParser.ListPageRule rule = listPageParser.parseListPageRule(task.getListPageRule());
+                urls = listPageParser.crawlAllPages(task.getListPageUrl(), rule);
+            } else {
+                urls = directUrlParser.getUrls(task.getSeedUrls());
+            }
+
+            log.info("Found {} URLs to crawl for task {}", urls.size(), taskId);
+
+            List<SpiderField> fields = spiderFieldRepository.findByTaskIdOrderByDisplayOrder(taskId);
+
+            int successCount = 0;
+            int failedCount = 0;
+
+            for (String url : urls) {
+                try {
+                    Document doc = contentPageExtractor.fetchContentPage(url);
+
+                    if (doc != null) {
+                        Map<String, Object> extractedFields = contentPageExtractor.extract(doc, fields);
+                        contentService.saveContent(taskId, url, extractedFields, doc.html());
+                        successCount++;
+                        itemsCrawled = successCount;
+                        log.debug("Successfully crawled URL: {}", url);
+                    } else {
+                        failedCount++;
+                        log.warn("Failed to fetch document for URL: {}", url);
+                    }
+                } catch (Exception e) {
+                    failedCount++;
+                    log.error("Error crawling URL {}: {}", url, e.getMessage());
+                }
+            }
+
+            log.info("Crawl completed for task {}: success={}, failed={}", taskId, successCount, failedCount);
+
+            long durationMs = System.currentTimeMillis() - startTime;
+            updateExecutionLog(executionLog, ExecutionStatus.SUCCESS, itemsCrawled, null, durationMs);
+
+        } catch (Exception e) {
+            long durationMs = System.currentTimeMillis() - startTime;
+            errorMessage = e.getMessage();
+            log.error("Crawl failed for task {}: {}", taskId, e.getMessage(), e);
+            updateExecutionLog(executionLog, ExecutionStatus.FAILED, itemsCrawled, errorMessage, durationMs);
+            throw e;
+        }
     }
 
-    /**
-     * 异步执行爬虫任务
-     * @param taskId 任务ID
-     * @param task 任务实体
-     */
-    @Async("crawlTaskExecutor")
-    public void executeAsync(Long taskId, SpiderTask task) {
+    private void updateExecutionLog(ExecutionLog logEntry, ExecutionStatus status, int itemsCrawled, String errorMessage, long durationMs) {
+        if (logEntry == null) {
+            return;
+        }
         try {
-            execute(taskId, task);
+            logEntry.setStatus(status);
+            logEntry.setFinishedAt(LocalDateTime.now());
+            logEntry.setItemsCrawled(itemsCrawled);
+            logEntry.setDurationMs(durationMs);
+            if (errorMessage != null && errorMessage.length() > 65535) {
+                logEntry.setErrorMessage(errorMessage.substring(0, 65535));
+            } else {
+                logEntry.setErrorMessage(errorMessage);
+            }
+            executionLogRepository.save(logEntry);
+        } catch (Exception e) {
+            CrawlerEngine.log.warn("Failed to update execution log {}: {}", logEntry.getId(), e.getMessage());
+        }
+    }
+
+    public void execute(Long taskId, SpiderTask task) {
+        execute(taskId, task, TriggerType.MANUAL);
+    }
+
+    @Async("crawlTaskExecutor")
+    public void executeAsync(Long taskId, SpiderTask task, TriggerType triggerType) {
+        try {
+            execute(taskId, task, triggerType);
         } finally {
-            // Restore task status to ENABLED
             SpiderTask existingTask = spiderTaskRepository.findById(taskId).orElse(null);
             if (existingTask != null) {
                 existingTask.setStatus(SpiderTask.TaskStatus.ENABLED);
@@ -119,13 +154,14 @@ public class CrawlerEngine {
         }
     }
 
-    // Crawl a single URL
+    public void executeAsync(Long taskId, SpiderTask task) {
+        executeAsync(taskId, task, TriggerType.MANUAL);
+    }
+
     public Map<String, Object> crawl(String url, SpiderTask task) {
-        // Legacy method - delegate to execute
         return Map.of("message", "Use execute() instead");
     }
 
-    // Crawl list page
     public List<String> crawlListPage(String listPageUrl, SpiderTask task) {
         return List.of();
     }

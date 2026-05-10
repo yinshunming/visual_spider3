@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.jsoup.helper.W3CDom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.xml.xpath.XPath;
@@ -22,15 +23,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 内容页面字段提取器
- * 使用Jsoup进行HTML解析，支持CSS和XPath选择器
- */
 @Component
 public class ContentPageExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(ContentPageExtractor.class);
-    private static final int TIMEOUT_MS = 30000;
+
+    @Value("${spider.crawler.timeout:30000}")
+    private int timeoutMs;
 
     /**
      * 获取内容页面
@@ -41,7 +40,7 @@ public class ContentPageExtractor {
     public Document fetchContentPage(String url) throws IOException {
         log.info("Fetching content page: {}", url);
         return Jsoup.connect(url)
-                .timeout(TIMEOUT_MS)
+                .timeout(timeoutMs)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .get();
     }
