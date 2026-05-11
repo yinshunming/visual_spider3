@@ -1,0 +1,76 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      backend:
+        image: eclipse-temurin:17-jdk
+        ports:
+          - 8080:8080
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
+          SPRING_DATASOURCE_DRIVER: org.h2.Driver
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD:
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/actuator/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for backend to be ready
+        run: |
+          for i in {1..30}; do
+            curl -s http://localhost:8080/api/tasks > /dev/null 2>&1 && echo "Backend ready" && break
+            echo "Waiting for backend... ($i/30)"
+            sleep 2
+          done
+
+      - name: Run E2E tests
+        working-directory: ./frontend
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/test-results/
+          retention-days: 7
+
+      - name: Upload test traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: frontend/trace.zip
+          retention-days: 14
