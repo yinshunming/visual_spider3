@@ -1,6 +1,6 @@
 # Visual Spider 开发路线图
 
-**更新日期**: 2026-05-10
+**更新日期**: 2026-05-11
 
 ---
 
@@ -143,7 +143,7 @@ backend/src/main/java/com/example/visualspider/
 - [x] 内容编辑功能
 - [x] Excel/CSV 导出
 - [x] ContentControllerTest - API 集成测试（21 tests）
-- [x] E2E 测试框架 - Playwright E2E（50/54 tests）
+- [x] E2E 测试框架 - Playwright E2E（60/67 tests，7 skipped）
 
 ### API
 | 方法 | 路径 | 说明 |
@@ -167,6 +167,7 @@ backend/src/main/java/com/example/visualspider/
 - [x] 错误处理与重试机制（m6a-scheduling-core）
 - [x] 任务执行日志持久化 + 查询 API（m6b-scheduling-ops）
 - [x] 爬虫线程池独立配置 + Jsoup 超时配置（m6b-scheduling-ops）
+- [x] E2E 主流程测试覆盖（Mock Server + P0/P1/P2 测试，60/67 通过）
 - [ ] 性能优化（并发爬取、连接池）
 - [ ] 监控与告警（可选）
 
@@ -213,5 +214,5 @@ M6 (调度与发布)
 | M2 | ✅ 已完成 | 2026-04-28 |
 | M3 | ✅ 已完成 | 2026-04-29 |
 | M4 | ✅ 已完成 | 2026-05-07 |
-| M5 | ✅ 已完成 | 2026-05-10 |
-| M6 | 🚧 进行中 | m6a ✅, m6b ✅ |
+| M5 | ✅ 已完成 | 2026-05-11 |
+| M6 | ✅ 已完成 | m6a ✅, m6b ✅, E2E 主流程测试 ✅ |
