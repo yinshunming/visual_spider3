@@ -38,9 +38,17 @@ export class ContentEditPage extends BasePage {
   }
 
   async selectStatus(status: 'PENDING' | 'PUBLISHED' | 'DELETED'): Promise<void> {
+    const statusLabels: Record<string, string> = {
+      'PENDING': '待发布',
+      'PUBLISHED': '已发布',
+      'DELETED': '已删除'
+    }
+    const label = statusLabels[status] || status
     const statusDropdown = this.page.locator('.el-form').locator('.el-select')
     await statusDropdown.click()
-    const option = this.page.locator('.el-select-dropdown__item').filter({ hasText: status })
+    const dropdown = this.page.locator('.el-select-dropdown:visible').first()
+    await dropdown.waitFor({ state: 'visible', timeout: 5000 })
+    const option = dropdown.locator('.el-select-dropdown__item').filter({ hasText: new RegExp(`^${label}$`) })
     await option.click()
   }
 

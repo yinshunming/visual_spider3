@@ -46,7 +46,7 @@ test.describe('任务列表页 E2E 测试', () => {
     if (await deleteButton.isVisible()) {
       await deleteButton.click()
       // 确认删除对话框出现
-      const confirmDialog = page.locator('.el-message-box, [role="dialog"]')
+      const confirmDialog = page.locator('.el-message-box, [role="dialog"]').first()
       await expect(confirmDialog).toBeVisible()
     }
   })

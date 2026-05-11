@@ -87,7 +87,7 @@ export class TaskListPage extends BasePage {
   async clickDeleteTask(taskId: number): Promise<void> {
     const row = this.page.locator('.el-table__body tr').filter({ hasText: String(taskId) })
     const deleteButton = row.locator('button').filter({ hasText: /^删除$/ })
-    await deleteButton.click()
+    await deleteButton.first().click()
   }
 
   /**
@@ -95,7 +95,7 @@ export class TaskListPage extends BasePage {
    */
   async confirmDelete(): Promise<void> {
     // Element Plus 确认框
-    const confirmButton = this.page.getByRole('button', { name: /确定/i })
+    const confirmButton = this.page.locator('.el-message-box__wrapper button').filter({ hasText: /确定/i })
     await confirmButton.click()
   }
 
@@ -105,7 +105,7 @@ export class TaskListPage extends BasePage {
   async clickEnableTask(taskId: number): Promise<void> {
     const row = this.page.locator('.el-table__body tr').filter({ hasText: String(taskId) })
     const enableButton = row.locator('button').filter({ hasText: /^启用$/ })
-    await enableButton.click()
+    await enableButton.first().click()
   }
 
   /**
@@ -114,6 +114,6 @@ export class TaskListPage extends BasePage {
   async clickDisableTask(taskId: number): Promise<void> {
     const row = this.page.locator('.el-table__body tr').filter({ hasText: String(taskId) })
     const disableButton = row.locator('button').filter({ hasText: /^停用$/ })
-    await disableButton.click()
+    await disableButton.first().click()
   }
 }

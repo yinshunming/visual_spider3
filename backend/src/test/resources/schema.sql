@@ -44,7 +44,21 @@ CREATE TABLE IF NOT EXISTS content_items (
     created_at TIMESTAMP
 );
 
+-- Execution logs table
+CREATE TABLE IF NOT EXISTS execution_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    task_id BIGINT NOT NULL,
+    trigger_type VARCHAR(50) NOT NULL,
+    started_at TIMESTAMP NOT NULL,
+    finished_at TIMESTAMP,
+    status VARCHAR(50) NOT NULL DEFAULT 'RUNNING',
+    items_crawled INT,
+    error_message TEXT,
+    duration_ms BIGINT
+);
+
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_spider_fields_task_id ON spider_fields(task_id);
 CREATE INDEX IF NOT EXISTS idx_content_items_task_id ON content_items(task_id);
 CREATE INDEX IF NOT EXISTS idx_content_items_status ON content_items(status);
+CREATE INDEX IF NOT EXISTS idx_execution_logs_task_id ON execution_logs(task_id);

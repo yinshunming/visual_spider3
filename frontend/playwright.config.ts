@@ -7,6 +7,11 @@ const __dirname = dirname(__filename)
 
 export default defineConfig({
   testDir: resolve(__dirname, 'tests/e2e'),
+  testMatch: [
+    '**/*.spec.ts',
+    '!**/node_modules/**',
+    '!**/manual/**'
+  ],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

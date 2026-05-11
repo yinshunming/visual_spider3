@@ -77,9 +77,11 @@ export class ContentListPage extends BasePage {
     await cancelButton.click()
   }
 
-  async selectTaskFilter(taskId: number): Promise<void> {
+  async selectTaskFilter(taskName: string): Promise<void> {
     await this.taskFilter.click()
-    const option = this.page.locator('.el-select-dropdown__item').filter({ hasText: String(taskId) })
+    const dropdown = this.page.locator('.el-select-dropdown:visible').first()
+    await dropdown.waitFor({ state: 'visible', timeout: 5000 })
+    const option = dropdown.locator('.el-select-dropdown__item').filter({ hasText: taskName }).first()
     await option.click()
   }
 
@@ -93,7 +95,9 @@ export class ContentListPage extends BasePage {
   async changePageSize(size: number): Promise<void> {
     const sizeSelect = this.page.locator('.el-pagination__sizes .el-select')
     await sizeSelect.click()
-    const option = this.page.locator('.el-select-dropdown__item').filter({ hasText: String(size) })
-    await option.click()
+    const dropdown = this.page.locator('.el-select-dropdown:visible').first()
+    await dropdown.waitFor({ state: 'visible', timeout: 5000 })
+    const option = dropdown.locator('.el-select-dropdown__item').filter({ hasText: String(size) })
+    await option.first().click()
   }
 }

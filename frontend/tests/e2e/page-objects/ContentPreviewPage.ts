@@ -29,18 +29,18 @@ export class ContentPreviewPage extends BasePage {
   }
 
   async getIdValue(): Promise<string> {
-    const item = this.dialog.locator('.el-descriptions__label').filter({ hasText: 'ID' })
-    return await item.locator('~td').textContent() || ''
+    const idCell = this.dialog.locator('.el-descriptions__cell').filter({ hasText: /^ID$/ }).first()
+    return await idCell.locator('..').textContent() || ''
   }
 
   async getStatusValue(): Promise<string> {
-    const item = this.dialog.locator('.el-descriptions__label').filter({ hasText: '状态' })
-    return await item.locator('~td').textContent() || ''
+    const statusCell = this.dialog.locator('.el-descriptions__cell').filter({ hasText: /^状态$/ }).first()
+    return await statusCell.locator('..').textContent() || ''
   }
 
   async getSourceUrlValue(): Promise<string> {
-    const item = this.dialog.locator('.el-descriptions__label').filter({ hasText: '来源URL' })
-    return await item.locator('~td').textContent() || ''
+    const urlCell = this.dialog.locator('.el-descriptions__cell').filter({ hasText: /^来源URL$/ }).first()
+    return await urlCell.locator('..').textContent() || ''
   }
 
   async getFieldsTableRowCount(): Promise<number> {
