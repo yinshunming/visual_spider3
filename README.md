@@ -10,6 +10,7 @@
 | Java 版本 | Java | 17+ |
 | 数据库 | PostgreSQL | 15+ |
 | HTML 解析 | Jsoup | 1.17.2 |
+| Lombok | Lombok | 1.18.38 |
 | 构建工具 | Maven | 3.x |
 
 ## 项目结构
@@ -123,6 +124,22 @@ npm run build    # 构建到 backend/src/main/resources/static/
 cd backend
 mvn test
 ```
+
+### IDEA 启动后端报 `TypeTag :: UNKNOWN`
+
+项目编译目标是 Java 17，但本机可以用 JDK 24 编译运行。若 IDEA 使用 JDK 24，必须使用 Lombok `1.18.38+`；旧版本 Lombok 在 JDK 24 的 `javac` annotation processor 初始化阶段会报：
+
+```text
+java: java.lang.ExceptionInInitializerError
+com.sun.tools.javac.code.TypeTag :: UNKNOWN
+```
+
+处理步骤：
+
+1. Reload Maven Projects，确认 `backend/pom.xml` 中 Lombok 为 `1.18.38+`
+2. Build -> Rebuild Project
+3. 仍失败时执行 Invalidate Caches / Restart
+4. 更稳妥的配置是让 IDEA Project SDK / Maven Runner JRE 使用 JDK 17
 
 ### 添加新依赖
 

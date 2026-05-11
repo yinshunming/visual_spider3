@@ -1,7 +1,8 @@
 # Spring Boot 项目规范
 
 ## 技术栈
-- Java 17+ / Spring Boot 3.x
+- Java 17 编译目标 / Spring Boot 3.x
+- 本机可用 JDK 17+；若 IDEA 使用 JDK 24，Lombok 必须保持 `1.18.38+`
 - MyBatis 或 JPA / Maven 或 Gradle
 - PostgreSQL / Redis / MQ
 
@@ -11,8 +12,8 @@
 - 关注事务边界、幂等、并发安全、缓存一致性
 
 ## 命令
-- 构建：`mvn clean package -DskipTests`
-- 测试：`mvn test`
+- 构建：`cd backend && mvn clean package -DskipTests`
+- 测试：`cd backend && mvn test`
 - 前端开发：`cd frontend && npm run dev`（端口 3000，代理 /api 到 8080）
 - 前端构建：`cd frontend && npm run build`
 - 前端测试：`cd frontend && npm run test`（Vitest）
@@ -21,7 +22,7 @@
 ## 测试规范
 
 ### 测试基础设施
-- **测试数据库**：H2 内存数据库（`application-test.yml` 配置）
+- **测试数据库**：Repository 测试使用 H2 内存数据库（`application-test.yml` 配置）；`ContentControllerTest` 当前显式连接本地 PostgreSQL
 - **测试框架**：Spring Boot Test + JUnit 5
 - **Mock 框架**：Spring Boot 内置 MockMvc
 
@@ -40,6 +41,7 @@ mvn test
 
 ### 注意事项
 - 测试配置：`src/test/resources/application-test.yml`（H2 内存数据库）
+- 完整运行 `mvn test` 前需确保本地 PostgreSQL `localhost:5432/postgres` 可用，账号密码与 `ContentControllerTest` 一致
 - 提交前必须通过所有测试
 - 新功能需要同步编写对应的单元测试
 

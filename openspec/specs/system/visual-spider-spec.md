@@ -1,10 +1,10 @@
 # Visual Spider 可视化爬虫系统设计
 
 **日期**: 2026-04-26
-**状态**: 已实现（M1-M3）
+**状态**: 已实现（M1-M6）
 
-**更新日期**: 2026-05-05
-**里程碑进度**: M1 ✅ | M2 ✅ | M3 ✅ | M4-M6 ⬜
+**更新日期**: 2026-05-11
+**里程碑进度**: M1 ✅ | M2 ✅ | M3 ✅ | M4 ✅ | M5 ✅ | M6 ✅
 
 ---
 
@@ -70,6 +70,20 @@
 | status | ENUM | PUBLISHED / PENDING / DELETED |
 | published_at | TIMESTAMP | 发布时间 |
 | created_at | TIMESTAMP | 创建时间 |
+
+### 2.4 ExecutionLog（执行日志）
+
+| 字段 | 类型 | 说明 |
+|-----|------|------|
+| id | BIGINT | 主键 |
+| task_id | BIGINT | 关联任务 ID |
+| trigger_type | ENUM | SCHEDULED / MANUAL |
+| started_at | TIMESTAMP | 开始时间 |
+| finished_at | TIMESTAMP | 结束时间 |
+| status | ENUM | RUNNING / SUCCESS / FAILED |
+| items_crawled | INT | 爬取条数 |
+| error_message | TEXT | 失败原因 |
+| duration_ms | BIGINT | 耗时毫秒 |
 
 ---
 
@@ -202,7 +216,8 @@ visual-spider/
 │   └── src/main/java/com/example/visualspider/
 │       ├── controller/
 │       │   ├── SpiderTaskController.java
-│       │   └── ContentController.java
+│       │   ├── ContentController.java
+│       │   └── ExecutionController.java
 │       ├── service/
 │       │   ├── SpiderTaskService.java
 │       │   ├── CrawlerEngine.java          # M3: 爬虫执行引擎
@@ -210,19 +225,24 @@ visual-spider/
 │       │   ├── ContentPageExtractor.java   # M3: 内容页提取
 │       │   ├── PaginationRule.java         # M3: 分页规则
 │       │   ├── DirectUrlParser.java        # M3: 直接URL模式
-│       │   └── ContentService.java
+│       │   ├── ContentService.java
+│       │   ├── SpiderSchedulerService.java # M6: 定时扫描与触发
+│       │   └── ExecutionLogService.java    # M6: 执行日志写入与查询
 │       ├── config/
-│       │   └── AsyncConfig.java            # M3: 异步配置
+│       │   ├── AsyncConfig.java            # M3: 异步配置
+│       │   └── SchedulerConfig.java        # M6: 调度线程池配置
 │       └── exception/
 │           └── CrawlException.java          # M3: 爬虫异常
 │       ├── entity/
 │       │   ├── SpiderTask.java
 │       │   ├── SpiderField.java
-│       │   └── ContentItem.java
+│       │   ├── ContentItem.java
+│       │   └── ExecutionLog.java
 │       ├── repository/
 │       │   ├── SpiderTaskRepository.java
 │       │   ├── SpiderFieldRepository.java
-│       │   └── ContentItemRepository.java
+│       │   ├── ContentItemRepository.java
+│       │   └── ExecutionLogRepository.java
 │       └── dto/
 │           └── (Request/Response DTOs)
 ├── frontend/
@@ -311,10 +331,20 @@ visual-spider/
 | DELETE | /api/contents/{id} | 删除内容 |
 | GET | /api/contents/export | 导出内容（Excel/CSV） |
 
+### 8.5 执行历史
+
+| 方法 | 路径 | 说明 |
+|-----|------|------|
+| GET | /api/executions | 分页查询执行历史（支持 taskId 过滤） |
+| GET | /api/executions/{id} | 获取单次执行详情 |
+
 ---
 
-## 9. 下一步
+## 9. 当前状态
 
-- [x] M1-M3 已完成实现
-- [ ] M4-M6 继续开发
-- [ ] 前端可视化配置界面开发
+- [x] M1 基础设施已完成
+- [x] M2 任务管理已完成
+- [x] M3 爬虫核心已完成
+- [x] M4 可视化配置已完成
+- [x] M5 内容管理已完成
+- [x] M6 调度与发布已完成
