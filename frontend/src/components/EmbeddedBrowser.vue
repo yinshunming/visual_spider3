@@ -21,31 +21,34 @@
         <el-radio-button label="XPATH">XPath</el-radio-button>
       </el-radio-group>
 
-      <el-checkbox v-model="enableClickMode" style="margin-left: 16px;">
-        点击选择模式
-      </el-checkbox>
-
       <el-button
-        v-if="iframeUrl"
+        v-if="sessionId"
         style="margin-left: 16px;"
         @click="refreshPage"
         :loading="loading"
       >
         刷新
       </el-button>
+
+      <el-button
+        v-if="sessionId"
+        style="margin-left: 8px;"
+        @click="closeSession"
+        type="danger"
+        plain
+      >
+        关闭浏览器
+      </el-button>
     </div>
 
     <!-- Click Mode Instruction -->
-    <div v-if="enableClickMode && iframeUrl" class="click-mode-hint">
+    <div v-if="sessionId" class="click-mode-hint">
       <el-alert type="info" :closable="false" show-icon>
         <template #title>
-          点击选择模式已启用
+          点击选择模式
         </template>
         <template #default>
-          点击 iframe 中的页面元素将自动生成选择器。
-          <span v-if="!isSameOrigin">
-            由于跨域限制，请手动输入元素信息来生成选择器。
-          </span>
+          点击右侧截图中的页面元素将自动生成选择器。
         </template>
       </el-alert>
     </div>
@@ -56,19 +59,38 @@
       <div class="browser-frame" ref="frameContainer">
         <div v-if="loading" class="loading-mask">
           <el-icon class="is-loading" :size="40"><Loading /></el-icon>
-          <p>页面加载中...</p>
+          <p>{{ loadingMessage }}</p>
         </div>
 
-        <iframe
-          v-show="!loading && iframeUrl"
-          ref="browserFrame"
-          :src="iframeUrl"
-          class="browser-iframe"
-          @load="onIframeLoad"
-          @error="onIframeError"
-        />
+        <!-- Screenshot Display -->
+        <div v-if="screenshotData && !loading" class="screenshot-container" @click="handleScreenshotClick">
+          <img
+            ref="screenshotImage"
+            :src="'data:image/png;base64,' + screenshotData"
+            class="screenshot-image"
+            :style="{ width: screenshotWidth + 'px', height: screenshotHeight + 'px' }"
+          />
+          <!-- Click marker -->
+          <div
+            v-if="clickMarker"
+            class="click-marker"
+            :style="{ left: clickMarker.x + 'px', top: clickMarker.y + 'px' }"
+          ></div>
+        </div>
 
-        <div v-if="!iframeUrl && !loading" class="empty-state">
+        <!-- Session expired message -->
+        <div v-if="sessionExpired && !loading" class="error-state">
+          <el-alert type="warning" :closable="false" show-icon>
+            <template #title>
+              Session 已过期
+            </template>
+            <template #default>
+              请重新加载页面
+            </template>
+          </el-alert>
+        </div>
+
+        <div v-if="!sessionId && !loading && !sessionExpired" class="empty-state">
           <el-empty description="输入URL并点击加载页面开始">
             <template #image>
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -82,34 +104,6 @@
       <!-- Selector Panel -->
       <div class="selector-panel">
         <h4 class="panel-title">生成的选择器</h4>
-
-        <!-- Manual Selector Input (for cross-origin iframes) -->
-        <div v-if="enableClickMode && iframeUrl && !isSameOrigin" class="manual-input-section">
-          <el-input
-            v-model="manualTagName"
-            placeholder="标签名，例如: div, span, a"
-            clearable
-            @input="generateFromManualInput"
-          />
-          <el-input
-            v-model="manualId"
-            placeholder="ID (可选)"
-            clearable
-            @input="generateFromManualInput"
-          />
-          <el-input
-            v-model="manualClasses"
-            placeholder="类名，多个用空格分隔 (可选)"
-            clearable
-            @input="generateFromManualInput"
-          />
-          <el-input
-            v-model="manualAttributes"
-            placeholder="其他属性，例如: data-testid, name"
-            clearable
-            @input="generateFromManualInput"
-          />
-        </div>
 
         <!-- CSS Selector -->
         <div class="selector-section">
@@ -181,36 +175,32 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
+import * as playwrightApi from '../api/playwright'
 
-// Refs
 const url = ref('')
 const loading = ref(false)
-const iframeUrl = ref('')
-const browserFrame = ref(null)
-const frameContainer = ref(null)
+const loadingMessage = ref('页面加载中...')
+const sessionId = ref(null)
+const sessionExpired = ref(false)
 
-// Selector state
+const screenshotData = ref('')
+const screenshotWidth = ref(1280)
+const screenshotHeight = ref(720)
+const screenshotImage = ref(null)
+
 const selectorType = ref('CSS')
-const enableClickMode = ref(false)
 const cssSelector = ref('')
 const xpathSelector = ref('')
 const testResult = ref('')
 const lastClickedElement = ref(null)
+const clickMarker = ref(null)
 
-// Manual input for cross-origin iframes
-const manualTagName = ref('')
-const manualId = ref('')
-const manualClasses = ref('')
-const manualAttributes = ref('')
+let pingInterval = null
 
-// CORS detection
-const isSameOrigin = ref(false)
-
-// Load page into iframe
-const loadPage = () => {
+const loadPage = async () => {
   if (!url.value) return
 
   let normalizedUrl = url.value.trim()
@@ -226,247 +216,201 @@ const loadPage = () => {
   }
 
   loading.value = true
-  iframeUrl.value = normalizedUrl
+  loadingMessage.value = '正在创建浏览器会话...'
+  sessionExpired.value = false
   cssSelector.value = ''
   xpathSelector.value = ''
   testResult.value = ''
   lastClickedElement.value = null
-  isSameOrigin.value = false
-}
+  clickMarker.value = null
 
-// Refresh current page
-const refreshPage = () => {
-  if (iframeUrl.value) {
-    loading.value = true
-    // Force iframe reload by removing and re-adding src
-    const iframe = browserFrame.value
-    if (iframe) {
-      const currentSrc = iframe.src
-      iframe.src = ''
-      setTimeout(() => {
-        iframe.src = currentSrc
-      }, 100)
-    }
+  try {
+    const res = await playwrightApi.createSession(normalizedUrl)
+    sessionId.value = res.data.sessionId
+
+    loadingMessage.value = '正在获取截图...'
+    await refreshScreenshot()
+
+    startPingInterval()
+  } catch (err) {
+    handleApiError(err)
+  } finally {
+    loading.value = false
   }
 }
 
-// Iframe load handler
-const onIframeLoad = () => {
-  loading.value = false
+const refreshPage = async () => {
+  if (!sessionId.value) return
 
-  // Check if same origin (can only access iframe content if same origin)
+  loading.value = true
+  loadingMessage.value = '正在刷新...'
+
   try {
-    const iframe = browserFrame.value
-    if (iframe && iframe.contentDocument) {
-      isSameOrigin.value = true
-      if (enableClickMode.value) {
-        setupClickInterception()
+    await refreshScreenshot()
+  } catch (err) {
+    handleApiError(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const refreshScreenshot = async () => {
+  if (!sessionId.value) return
+
+  const res = await playwrightApi.getScreenshot(sessionId.value)
+  screenshotData.value = res.data.data
+  screenshotWidth.value = res.data.width
+  screenshotHeight.value = res.data.height
+}
+
+const closeSession = async () => {
+  if (!sessionId.value) return
+
+  try {
+    await playwrightApi.closeSession(sessionId.value)
+  } catch (err) {
+    console.warn('Close session failed:', err)
+  }
+
+  sessionId.value = null
+  screenshotData.value = ''
+  stopPingInterval()
+}
+
+const startPingInterval = () => {
+  stopPingInterval()
+  pingInterval = setInterval(async () => {
+    if (!sessionId.value) {
+      stopPingInterval()
+      return
+    }
+    try {
+      await playwrightApi.pingSession(sessionId.value)
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        sessionExpired.value = true
+        stopPingInterval()
       }
-    } else {
-      isSameOrigin.value = false
     }
-  } catch {
-    isSameOrigin.value = false
+  }, 30000)
+}
+
+const stopPingInterval = () => {
+  if (pingInterval) {
+    clearInterval(pingInterval)
+    pingInterval = null
   }
 }
 
-// Iframe error handler
-const onIframeError = () => {
-  loading.value = false
-  ElMessage.error('页面加载失败，请检查URL是否可访问')
-}
+const handleScreenshotClick = async (event) => {
+  if (!sessionId.value || !screenshotImage.value) return
 
-// Setup click interception in iframe
-const setupClickInterception = () => {
-  const iframe = browserFrame.value
-  if (!iframe || !iframe.contentDocument) return
+  const rect = screenshotImage.value.getBoundingClientRect()
+  const scaleX = screenshotWidth.value / rect.width
+  const scaleY = screenshotHeight.value / rect.height
 
-  const iframeDoc = iframe.contentDocument
+  const x = Math.round(event.offsetX * scaleX)
+  const y = Math.round(event.offsetY * scaleY)
 
-  // Remove existing listener if any
-  iframeDoc.removeEventListener('click', handleIframeClick, true)
+  clickMarker.value = { x: event.offsetX, y: event.offsetY }
 
-  // Add click listener
-  iframeDoc.addEventListener('click', handleIframeClick, true)
-}
+  loading.value = true
+  loadingMessage.value = '正在获取元素信息...'
 
-// Handle click inside iframe
-const handleIframeClick = (event) => {
-  if (!enableClickMode.value) return
-
-  event.preventDefault()
-  event.stopPropagation()
-
-  const target = event.target
-  lastClickedElement.value = {
-    tagName: target.tagName.toLowerCase(),
-    id: target.id || '',
-    className: target.className || '',
-    textContent: target.textContent || ''
-  }
-
-  // Generate selectors
-  cssSelector.value = generateCssSelector(target)
-  xpathSelector.value = generateXPath(target)
-
-  // Also send message for cross-origin support
   try {
-    iframe.contentWindow.postMessage({
-      type: 'ELEMENT_CLICKED',
-      tagName: target.tagName.toLowerCase(),
-      id: target.id,
-      className: target.className,
-      textContent: truncateText(target.textContent, 200)
-    }, '*')
-  } catch {
-    // Ignore postMessage errors for cross-origin
+    const res = await playwrightApi.getElementAt(sessionId.value, x, y)
+    const elementInfo = res.data
+
+    lastClickedElement.value = {
+      tagName: elementInfo.tagName,
+      id: elementInfo.id || '',
+      className: elementInfo.className || '',
+      textContent: elementInfo.textContent || ''
+    }
+
+    const fakeElement = {
+      tagName: elementInfo.tagName,
+      id: elementInfo.id || '',
+      className: elementInfo.className || ''
+    }
+
+    cssSelector.value = generateCssSelector(fakeElement)
+    xpathSelector.value = generateXPath(fakeElement)
+
+  } catch (err) {
+    handleApiError(err)
+  } finally {
+    loading.value = false
   }
 }
 
-// CSS Selector Generation Algorithm (ID > class > tag path)
 const generateCssSelector = (element) => {
   if (!element) return ''
 
-  // Step 1: If element has ID, use it (highest priority)
   if (element.id) {
     const idSelector = `#${element.id}`
-    // Verify it's unique
-    if (isUniqueSelector(idSelector, 'CSS')) {
-      return idSelector
-    }
-    // ID might not be unique, fall through
+    return idSelector
   }
 
-  // Step 2: Build selector from classes
   if (element.className && typeof element.className === 'string') {
     const classes = element.className.trim().split(/\s+/).filter(c => c)
     if (classes.length > 0) {
-      // Try each class combination from most specific to least
-      for (let i = classes.length; i > 0; i--) {
-        const classCombo = classes.slice(0, i).join('.')
-        const selector = `${element.tagName.toLowerCase()}.${classCombo}`
-        if (isUniqueSelector(selector, 'CSS')) {
-          return selector
-        }
-      }
-      // Try classes alone
-      const classSelector = '.' + classes.join('.')
-      if (isUniqueSelector(classSelector, 'CSS')) {
-        return classSelector
-      }
+      return `${element.tagName.toLowerCase()}.${classes.join('.')}`
     }
   }
 
-  // Step 3: Build path from tag names
-  const path = []
-  let current = element
-
-  while (current && current !== document.body && current.parentElement) {
-    let tag = current.tagName.toLowerCase()
-
-    // Add index if multiple siblings of same tag
-    const siblings = Array.from(current.parentElement.children).filter(
-      child => child.tagName === current.tagName
-    )
-    if (siblings.length > 1) {
-      const index = siblings.indexOf(current) + 1
-      tag += `:nth-of-type(${index})`
-    }
-
-    // Add class if available (first class only)
-    if (current.className && typeof current.className === 'string') {
-      const firstClass = current.className.trim().split(/\s+/)[0]
-      if (firstClass) {
-        tag += `.${firstClass}`
-      }
-    }
-
-    path.unshift(tag)
-    current = current.parentElement
-  }
-
-  return path.join(' > ')
+  return element.tagName.toLowerCase()
 }
 
-// XPath Generation Algorithm (DOM tree path)
 const generateXPath = (element) => {
   if (!element) return ''
 
   const parts = []
   let current = element
 
-  while (current && current.nodeType === Node.ELEMENT_NODE && current !== document.body) {
-    let index = 1
-    let sibling = current.previousSibling
-
-    // Count previous siblings of same tag name
-    while (sibling) {
-      if (sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName === current.tagName) {
-        index++
-      }
-      sibling = sibling.previousSibling
-    }
-
+  while (current && current.tagName) {
     const tagName = current.tagName.toLowerCase()
-    const part = `${tagName}[${index}]`
-    parts.unshift(part)
-    current = current.parentElement
+    parts.unshift(tagName)
+    current = { tagName: 'BODY' }
   }
 
   return '/' + parts.join('/')
 }
 
-// Check if selector is unique in document
-const isUniqueSelector = (selector, type) => {
-  if (!browserFrame.value) return false
+const testSelector = async (type) => {
+  if (!sessionId.value) return
+
+  const selector = type === 'CSS' ? cssSelector.value : xpathSelector.value
+  if (!selector) return
+
+  loading.value = true
+  loadingMessage.value = '正在测试选择器...'
 
   try {
-    let doc = browserFrame.value.contentDocument
-    if (!doc) return false
+    const res = await playwrightApi.testSelector(sessionId.value, selector, type)
+    const result = res.data
 
-    if (type === 'CSS') {
-      const elements = doc.querySelectorAll(selector)
-      return elements.length === 1
+    if (result.unique) {
+      testResult.value = `✓ 选择器唯一，匹配 1 个元素`
+    } else {
+      testResult.value = `⚠ 选择器匹配 ${result.count} 个元素，请优化\n\n` +
+        result.elements.slice(0, 5).map((el, i) =>
+          `${i + 1}. <${el.tagName}>` +
+          (el.id ? ` id="${el.id}"` : '') +
+          (el.className ? ` class="${el.className}"` : '')
+        ).join('\n')
     }
-  } catch {
-    // Invalid selector or cross-origin
+  } catch (err) {
+    if (err.response && err.response.data && err.response.data.errorCode === 'INVALID_SELECTOR') {
+      testResult.value = `✗ 选择器语法错误：${err.response.data.message}`
+    } else {
+      handleApiError(err)
+    }
+  } finally {
+    loading.value = false
   }
-  return false
 }
 
-// Generate selectors from manual input
-const generateFromManualInput = () => {
-  if (!manualTagName.value) {
-    cssSelector.value = ''
-    xpathSelector.value = ''
-    return
-  }
-
-  const tag = manualTagName.value.toLowerCase()
-  const id = manualId.value.trim()
-  const classes = manualClasses.value.trim().split(/\s+/).filter(c => c)
-  const attrs = manualAttributes.value.trim()
-
-  // Build CSS selector
-  let css = tag
-  if (id) {
-    css = `#${id}`
-  } else if (classes.length > 0) {
-    css = `${tag}.${classes.join('.')}`
-  }
-  if (attrs) {
-    css += `[${attrs}]`
-  }
-  cssSelector.value = css
-
-  // Build XPath
-  xpathSelector.value = `//${tag}` +
-    (id ? `[@id='${id}']` : '') +
-    (classes.length > 0 ? `[@class='${classes.join(' ')}']` : '') +
-    (attrs ? `[@${attrs}]` : '')
-}
-
-// Copy selector to clipboard
 const copySelector = async (type) => {
   const selector = type === 'CSS' ? cssSelector.value : xpathSelector.value
   if (!selector) return
@@ -475,7 +419,6 @@ const copySelector = async (type) => {
     await navigator.clipboard.writeText(selector)
     ElMessage.success(`${type === 'CSS' ? 'CSS' : 'XPath'} 选择器已复制到剪贴板`)
   } catch {
-    // Fallback for older browsers
     const textarea = document.createElement('textarea')
     textarea.value = selector
     document.body.appendChild(textarea)
@@ -486,79 +429,32 @@ const copySelector = async (type) => {
   }
 }
 
-// Test selector in iframe
-const testSelector = (type) => {
-  const selector = type === 'CSS' ? cssSelector.value : xpathSelector.value
-  if (!selector || !browserFrame.value) {
-    testResult.value = ''
-    return
-  }
-
-  try {
-    const iframe = browserFrame.value
-    const doc = iframe.contentDocument || iframe.contentWindow?.document
-
-    if (!doc) {
-      testResult.value = '无法访问 iframe 文档内容（跨域限制）'
-      return
-    }
-
-    let elements = []
-    let selectorType = ''
-
-    if (type === 'CSS') {
-      elements = Array.from(doc.querySelectorAll(selector))
-      selectorType = 'CSS'
-    } else {
-      // XPath evaluation
-      const result = doc.evaluate(selector, doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
-      for (let i = 0; i < result.snapshotLength; i++) {
-        elements.push(result.snapshotItem(i))
-      }
-      selectorType = 'XPath'
-    }
-
-    if (elements.length === 0) {
-      testResult.value = `未找到匹配的元素 (${selectorType}: ${selector})`
-    } else if (elements.length === 1) {
-      const el = elements[0]
-      testResult.value = `✓ 找到 1 个匹配元素\n` +
-        `标签: ${el.tagName.toLowerCase()}\n` +
-        `ID: ${el.id || '(无)'}\n` +
-        `类名: ${el.className || '(无)'}\n` +
-        `文本: ${truncateText(el.textContent, 100)}`
-    } else {
-      testResult.value = `✓ 找到 ${elements.length} 个匹配元素\n\n` +
-        elements.slice(0, 5).map((el, i) =>
-          `${i + 1}. <${el.tagName.toLowerCase()}` +
-          (el.id ? ` id="${el.id}"` : '') +
-          (el.className ? ` class="${el.className}"` : '') +
-          `>`
-        ).join('\n') +
-        (elements.length > 5 ? `\n... 还有 ${elements.length - 5} 个元素` : '')
-    }
-  } catch (error) {
-    testResult.value = `选择器错误: ${error.message}`
-  }
-}
-
-// Helper: truncate text
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   const trimmed = text.trim().replace(/\s+/g, ' ')
   return trimmed.length > maxLength ? trimmed.substring(0, maxLength) + '...' : trimmed
 }
 
-// Watch for click mode changes
-watch(enableClickMode, (newVal) => {
-  if (newVal && iframeUrl.value && isSameOrigin.value) {
-    nextTick(() => {
-      setupClickInterception()
-    })
+const handleApiError = (err) => {
+  if (err.response) {
+    const { status, data } = err.response
+    if (status === 404) {
+      sessionExpired.value = true
+      ElMessage.error('Session 已过期，请重新加载页面')
+    } else if (status === 409) {
+      ElMessage.error('已达最大并发数，请关闭其他浏览器窗口后重试')
+    } else if (status === 400) {
+      ElMessage.error(`请求错误：${data.message}`)
+    } else if (status === 500) {
+      ElMessage.error('服务器错误，请稍后重试')
+    } else {
+      ElMessage.error(`错误：${data.message || '未知错误'}`)
+    }
+  } else {
+    ElMessage.error('网络错误，请检查连接')
   }
-})
+}
 
-// Handle messages from iframe content script
 const handleMessage = (event) => {
   if (event.data && event.data.type === 'ELEMENT_CLICKED') {
     lastClickedElement.value = {
@@ -568,12 +464,10 @@ const handleMessage = (event) => {
       textContent: event.data.textContent || ''
     }
 
-    // Generate selectors from received data
     const tag = event.data.tagName
     const id = event.data.id
     const className = event.data.className
 
-    // CSS Selector
     if (id) {
       cssSelector.value = `#${id}`
     } else if (className) {
@@ -582,31 +476,26 @@ const handleMessage = (event) => {
       cssSelector.value = tag
     }
 
-    // XPath
     xpathSelector.value = `//${tag}` + (id ? `[@id='${id}']` : '') + (className ? `[@class='${className}']` : '')
   }
 }
 
-// Setup message listener
 onMounted(() => {
   window.addEventListener('message', handleMessage)
 })
 
-// Cleanup
 onUnmounted(() => {
   window.removeEventListener('message', handleMessage)
-
-  // Remove click listener from iframe
-  if (browserFrame.value && browserFrame.value.contentDocument) {
-    browserFrame.value.contentDocument.removeEventListener('click', handleIframeClick, true)
+  stopPingInterval()
+  if (sessionId.value) {
+    playwrightApi.closeSession(sessionId.value).catch(() => {})
   }
 })
 
-// Expose methods for parent components
 defineExpose({
   getCssSelector: () => cssSelector.value,
   getXpathSelector: () => xpathSelector.value,
-  getCurrentUrl: () => iframeUrl.value
+  getCurrentUrl: () => url.value
 })
 </script>
 
@@ -646,14 +535,30 @@ defineExpose({
   border: 1px solid #e4e7ed;
   border-radius: 4px;
   margin: 8px;
-  overflow: hidden;
+  overflow: auto;
 }
 
-.browser-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: white;
+.screenshot-container {
+  position: relative;
+  display: inline-block;
+  margin: 8px;
+}
+
+.screenshot-image {
+  display: block;
+  cursor: crosshair;
+  border: 1px solid #e4e7ed;
+}
+
+.click-marker {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid red;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: rgba(255, 0, 0, 0.1);
 }
 
 .loading-mask {
@@ -684,6 +589,13 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.error-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .selector-panel {
@@ -736,19 +648,5 @@ defineExpose({
 
 .element-info {
   margin-top: 16px;
-}
-
-.manual-input-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: #f5f7fa;
-  border-radius: 4px;
-  margin-bottom: 16px;
-}
-
-.manual-input-section :deep(.el-input) {
-  width: 100%;
 }
 </style>

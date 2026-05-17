@@ -43,7 +43,7 @@ visual_spider3/
 ### 1. 创建数据库
 
 ```sql
-CREATE DATABASE postgres;
+CREATE DATABASE visual_spider3_new;
 ```
 
 ### 2. 配置数据库连接
@@ -53,10 +53,12 @@ CREATE DATABASE postgres;
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/visual_spider3_new
     username: postgres
     password: 123456
 ```
+
+**注意**: Hibernate `ddl-auto: update` 会自动创建表，无需手动建表。
 
 ### 3. 构建项目
 
@@ -112,9 +114,23 @@ npm run build    # 构建到 backend/src/main/resources/static/
 ### 执行历史
 
 | 方法 | 路径 | 说明 |
-|------|------|
+|------|------|------|
 | GET | /api/executions | 分页查询执行历史（支持 taskId 过滤） |
 | GET | /api/executions/{id} | 执行详情（含耗时、条数、错误信息） |
+
+### Playwright 浏览器自动化
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /api/playwright/sessions | 创建浏览器 Session |
+| DELETE | /api/playwright/sessions/{sessionId} | 关闭 Session |
+| POST | /api/playwright/sessions/{sessionId}/ping | 心跳保活 |
+| POST | /api/playwright/sessions/{sessionId}/navigate | 导航到新页面 |
+| POST | /api/playwright/sessions/{sessionId}/screenshot | 获取截图 |
+| POST | /api/playwright/sessions/{sessionId}/element | 获取坐标处元素信息 |
+| POST | /api/playwright/sessions/{sessionId}/test-selector | 测试选择器唯一性 |
+
+**限制**: 最多 5 个并发 Session，Session 超时 3 分钟自动清理。
 
 ## 开发指南
 
@@ -156,7 +172,7 @@ mvn clean package -DskipTests
 | M1 | 基础设施 | ✅ 已完成 |
 | M2 | 任务管理 | ✅ 已完成 |
 | M3 | 爬虫核心 | ✅ 已完成 |
-| M4 | 可视化配置 | ✅ 已完成（E2E 测试：26/26 通过） |
+| M4 | 可视化配置 | ✅ 已完成（Playwright 升级：E2E 11/11 通过） |
 | M5 | 内容管理 | ✅ 已完成（API 测试：21/21 通过，E2E：60/67 通过） |
 | M6 | 调度与发布 | ✅ 已完成（m6a ✅, m6b ✅, E2E 主流程测试 ✅） |
 

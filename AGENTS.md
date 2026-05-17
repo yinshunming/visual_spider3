@@ -57,8 +57,8 @@ mvn test
 运营优先的可视化爬虫配置系统，支持通过内嵌浏览器点击操作自动生成爬虫规则。
 
 ## 系统架构
-- **前端**：Vue3 + Element Plus + Chrome DevTools Protocol（内嵌浏览器）
-- **后端**：Spring Boot + Jsoup + HttpClient
+- **前端**：Vue3 + Element Plus + Playwright（内嵌浏览器）
+- **后端**：Spring Boot + Playwright Java Client + Jsoup + HttpClient
 - **数据库**：PostgreSQL（JSONB 存储动态字段）
 - **调度**：Spring @Scheduler
 

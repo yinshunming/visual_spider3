@@ -135,11 +135,11 @@
 │                         Vue3 Frontend                                │
 ├────────────────┬─────────────────────────┬─────────────────────────┤
 │   任务管理      │     可视化配置           │      内容管理            │
-│   列表/启停     │   内嵌Chromium(CDP)     │   内容列表/预览/导出     │
+│   列表/启停     │   内嵌Playwright       │   内容列表/预览/导出     │
 └───────┬────────┴───────────┬─────────────┴─────────────────────────┘
          │                    │
-         │    前端直接通过 CDP 获取选择器
-         │    不需要后端参与
+          │    前端通过 Playwright API 获取选择器
+          │    后端控制浏览器，前端计算选择器
          │
 ┌───────▼─────────────────────────────────────────────────────────────┐
 │                        Spring Boot Backend                           │
@@ -156,7 +156,7 @@
 ```
 
 **架构说明**：
-- **前端职责**：内嵌浏览器加载页面、元素选择、选择器生成（通过前端 Playwright/CDP 直接获取，不发送请求到后端）
+- **前端职责**：内嵌浏览器加载页面、元素选择、选择器生成（通过 Playwright API + 前端计算）
 - **后端职责**：任务配置存储、爬虫执行引擎、内容管理
 - **前后端分离**：选择器生成在前端完成，后端只存储最终配置
 
@@ -168,26 +168,26 @@
 
 ```
 1. 选择"列表页"模式
-2. 输入列表页URL → 前端内嵌浏览器直接加载页面
+2. 输入列表页URL → Playwright 加载页面
 3. 配置列表页规则：
-   a. 点击"选择容器" → 前端CDP直接获取元素CSS/XPath → 生成containerSelector
-   b. 点击"选择链接" → 前端CDP直接获取元素CSS/XPath → 生成itemUrlSelector
+   a. 点击"选择容器" → 前端坐标计算 → 后端API获取元素 → 前端生成CSS/XPath → 生成containerSelector
+   b. 点击"选择链接" → 同上流程 → 生成itemUrlSelector
 4. 配置分页规则（可选）
 5. 配置内容页字段：
    a. 从列表页点击进入内容页（或直接输入内容页URL）
    b. 点击页面元素配置字段（标题→点击h1，正文→点击div.content）
-   c. 每个字段前端CDP直接生成CSS/XPath，可手动调整
+   c. 每个字段通过后端API获取元素信息，前端生成CSS/XPath，可手动调整
 6. 保存任务（选择器配置发送到后端存储）
 ```
 
-**关键区别**：页面加载和选择器生成都在前端完成，后端只负责存储最终配置
+**关键区别**：页面加载由后端 Playwright 控制，元素信息通过后端 API 获取，前端负责选择器计算
 
 ### 5.2 直接URL模式
 
 ```
 1. 选择"直接URL"模式
 2. 输入/导入内容页URL列表（支持粘贴、CSV导入）
-3. 配置内容页字段（同5.1步骤5-6，前端CDP直接生成选择器）
+3. 配置内容页字段（同5.1步骤5-6，后端API获取元素，前端生成选择器）
 4. 保存任务
 ```
 
@@ -199,7 +199,7 @@
 |-----|------|------|
 | 前端框架 | Vue3 + Vite |  |
 | UI组件库 | Element Plus |  |
-| 内嵌浏览器 | Chrome DevTools Protocol | 通过 Puppeteer/Playwright 实现 |
+| 内嵌浏览器 | Playwright Persistent Context | 后端控制浏览器，前端截图展示 |
 | 后端框架 | Spring Boot 3.x |  |
 | 爬虫内核 | Jsoup + HttpClient |  |
 | 数据库 | PostgreSQL | JSONB存储动态字段 |
@@ -231,8 +231,10 @@ visual-spider/
 │       ├── config/
 │       │   ├── AsyncConfig.java            # M3: 异步配置
 │       │   └── SchedulerConfig.java        # M6: 调度线程池配置
-│       └── exception/
-│           └── CrawlException.java          # M3: 爬虫异常
+│       ├── exception/
+│       │   └── CrawlException.java          # M3: 爬虫异常
+│       ├── service/
+│       │   ├── PlaywrightBrowserService.java # 浏览器自动化服务
 │       ├── entity/
 │       │   ├── SpiderTask.java
 │       │   ├── SpiderField.java
@@ -252,16 +254,16 @@ visual-spider/
 │       │   ├── TaskConfig.vue
 │       │   └── ContentManage.vue
 │       ├── components/
-│       │   └── EmbeddedBrowser.vue          # 内嵌Chromium，前端CDP直接获取选择器
+│       │   └── EmbeddedBrowser.vue          # 内嵌Playwright，截图+API方式
 │       └── api/
-│           └── (API调用，仅CRUD和任务执行，无CDP交互)
+│           └── (API调用，CRUD + Playwright 浏览器控制)
 └── docs/
     └── superpowers/
         └── specs/
             └── 2026-04-26-visual-spider-design.md
 ```
 
-**说明**：后端不再包含 CdpController、CdpService，选择器生成全部由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成
+**说明**：后端新增 PlaywrightBrowserService 和 PlaywrightController，通过 Playwright Persistent Context 控制浏览器
 
 ---
 
@@ -315,11 +317,16 @@ visual-spider/
 
 ### 8.3 可视化配置
 
-**说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成，不涉及后端 API
+**说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright API + 后端 PlaywrightBrowserService 完成
 
 | 方法 | 路径 | 说明 |
 |-----|------|------|
-| （无） | - | 选择器生成在前端完成，无需后端 API |
+| POST | /api/playwright/sessions | 创建浏览器 Session |
+| DELETE | /api/playwright/sessions/{sessionId} | 关闭 Session |
+| POST | /api/playwright/sessions/{sessionId}/screenshot | 获取截图 |
+| POST | /api/playwright/sessions/{sessionId}/element | 获取元素信息 |
+| POST | /api/playwright/sessions/{sessionId}/test-selector | 测试选择器唯一性 |
+| POST | /api/playwright/sessions/{sessionId}/navigate | 页面导航 |
 
 ### 8.4 内容管理
 

@@ -107,26 +107,27 @@ backend/src/main/java/com/example/visualspider/
 
 **目标**: 完成内嵌浏览器、元素选择、选择器生成
 
-**架构说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright/CDP 直接完成，**后端不参与**选择器生成过程
+**架构说明**：选择器生成由前端 EmbeddedBrowser.vue 通过 Playwright API 完成，**后端 PlaywrightBrowserService 参与**浏览器控制
 
 ### 交付物
-- [x] EmbeddedBrowser.vue - Vue3 内嵌 Chromium 组件（前端 Playwright/CDP）
-- [x] 页面加载与 DOM 渲染（前端内嵌浏览器）
-- [x] 元素点击位置 → CSS/XPath 选择器生成（前端 CDP 直接获取）
+- [x] EmbeddedBrowser.vue - Vue3 内嵌 Playwright 组件
+- [x] PlaywrightBrowserService - 后端浏览器自动化服务
+- [x] PlaywrightController - 浏览器控制 REST API
+- [x] 页面加载与 DOM 渲染（通过 Playwright）
+- [x] 元素点击 → 坐标计算 → 后端获取元素信息 → 前端生成选择器
 - [x] 选择器预览与调试（前端内嵌浏览器内直接预览）
 - [x] 任务配置保存到后端（仅 CRUD API）
-- [x] Playwright E2E 测试框架（26 个测试用例全部通过）
+- [x] Playwright E2E 测试框架（11 个测试）
 
 ### API
-**无 CDP 相关后端 API**
-
-任务配置通过 M2 的 SpiderTaskController 的 CRUD 接口保存：
 | 方法 | 路径 | 说明 |
 |-----|------|------|
-| POST | /api/tasks | 创建任务（含字段配置） |
-| PUT | /api/tasks/{id} | 更新任务配置 |
-
-（选择器生成在前端完成，不调用后端 API）
+| POST | /api/playwright/sessions | 创建浏览器 Session |
+| DELETE | /api/playwright/sessions/{sessionId} | 关闭 Session |
+| POST | /api/playwright/sessions/{sessionId}/screenshot | 获取截图 |
+| POST | /api/playwright/sessions/{sessionId}/element | 获取元素信息 |
+| POST | /api/playwright/sessions/{sessionId}/test-selector | 测试选择器唯一性 |
+| POST | /api/playwright/sessions/{sessionId}/navigate | 页面导航 |
 
 ---
 
@@ -213,6 +214,6 @@ M6 (调度与发布)
 | M1 | ✅ 已完成 | 2026-04-27 |
 | M2 | ✅ 已完成 | 2026-04-28 |
 | M3 | ✅ 已完成 | 2026-04-29 |
-| M4 | ✅ 已完成 | 2026-05-07 |
+| M4 | ✅ 已完成 | 2026-05-17 |
 | M5 | ✅ 已完成 | 2026-05-11 |
 | M6 | ✅ 已完成 | m6a ✅, m6b ✅, E2E 主流程测试 ✅ |
